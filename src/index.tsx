@@ -12,4 +12,7 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
 	)
 }
 
+// test eslint
+const a: string = "useless string"
+
 render(() => <App />, root!)
