@@ -24,3 +24,5 @@ jobs:
       - name: Vite Github Pages Deployer
         uses: skywarth/vite-github-pages-deployer@v1.4.0
         id: deploy_to_pages
+        with:
+          public_base_path: "/"
