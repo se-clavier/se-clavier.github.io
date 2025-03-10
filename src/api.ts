@@ -7,7 +7,7 @@ async function api_call(req: APICollection) {
 		body: JSON.stringify(req)
 	})
 	if (!header.ok) {
-		throw new Error(`Error: ${header.status} ${header.statusText}`)
+		throw new Error(`api fatal error: ${header.status} ${header.statusText}`)
 	}
 	return header.json()
 }
