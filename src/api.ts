@@ -1,7 +1,7 @@
 import { API, APICollection } from "../api"
 
-async function api_call(req: APICollection) {
-	const header = await fetch(import.meta.env.VITE_API_URL, {
+const api_call = (backend: string) => async (req: APICollection) => {
+	const header = await fetch(backend, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(req)
@@ -12,4 +12,4 @@ async function api_call(req: APICollection) {
 	return header.json()
 }
 
-export const api = new API(api_call)
+export const api = (backend: string, token: () => Promise<string>) => new API(api_call(backend), token)
