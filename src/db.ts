@@ -1,3 +1,4 @@
+import { LoginResponse } from "../api"
 import { api } from "./api"
 
 function cached<T>(f: () => Promise<T>) {
@@ -12,14 +13,16 @@ function cached<T>(f: () => Promise<T>) {
 	}
 }
 
+type User = LoginResponse
+
 export class DB {
 	public api
-	public user = cached(() => this.api.register({
+	public user: () => Promise<User> = cached(() => this.api.register({
 		username: "admin",
 		password: "123456"
 	}))
 
 	constructor(backend: string) {
-		this.api = api(backend, async () => (await this.user()).token)
+		this.api = api(backend, async () => (await this.user()).auth)
 	}
 }

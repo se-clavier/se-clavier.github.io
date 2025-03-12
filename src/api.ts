@@ -1,4 +1,4 @@
-import { API, APICollection } from "../api"
+import { API, APICollection, Auth } from "../api"
 
 const api_call = (backend: string) => async (req: APICollection) => {
 	const header = await fetch(backend, {
@@ -12,4 +12,4 @@ const api_call = (backend: string) => async (req: APICollection) => {
 	return header.json()
 }
 
-export const api = (backend: string, token: () => Promise<string>) => new API(api_call(backend), token)
+export const api = (backend: string, auth: () => Promise<Auth>) => new API(api_call(backend), auth)
