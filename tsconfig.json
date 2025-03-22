@@ -9,7 +9,8 @@
 		"jsx": "preserve",
 		"jsxImportSource": "solid-js",
 		"types": [
-			"vite/client"
+			"vite/client",
+			"semantic-ui",
 		],
 		"noEmit": true,
 		"isolatedModules": true
