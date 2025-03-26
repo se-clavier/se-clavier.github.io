@@ -20,6 +20,9 @@
 		"vite-plugin-solid": "^2.11.1"
 	},
 	"dependencies": {
+		"@rollup/plugin-inject": "^5.0.5",
+		"@types/semantic-ui": "^2.2.9",
+		"fomantic-ui-css": "^2.9.4",
 		"solid-js": "^1.9.3"
 	}
 }
