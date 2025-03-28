@@ -30,7 +30,7 @@ function show_login_modal() {
 }
 
 export function login() {
-	return new Promise<Auth>((resolve, reject) => {
+	return new Promise<Auth>(resolve => {
 		show_login_modal()
 
 		const set_error = (msg: string) => {
@@ -51,20 +51,7 @@ export function login() {
 				})
 				.exhaustive()
 		}
+		$("#login-submit").off("click")
 		$("#login-submit").on("click", submit)
-
-		const cancel_observer = new MutationObserver(() => {
-			if ($("#login-modal").hasClass("hidden")) {
-				remove_observer()
-				// If not resolved, this reject will take effect
-				reject(new Error("login cancelled"))
-			}
-		})
-		cancel_observer.observe($("#login-modal")[0], { attributes: true, attributeFilter: ["class"] })
-
-		const remove_observer = () => {
-			$("#login-submit").off("click", submit)
-			cancel_observer.disconnect()
-		}
 	})
 }

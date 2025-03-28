@@ -31,7 +31,7 @@ function show_register_modal() {
 }
 
 export function register() {
-	return new Promise((resolve, reject) => {
+	return new Promise(resolve => {
 		show_register_modal()
 
 		const set_error = (msg: string) => {
@@ -61,19 +61,7 @@ export function register() {
 					})
 			}
 		}
+		$("#register-submit").off("click")
 		$("#register-submit").on("click", submit)
-
-		const cancel_observer = new MutationObserver(() => {
-			if ($("#register-modal").hasClass("hidden")) {
-				remove_observer()
-				reject(new Error("register cancelled"))
-			}
-		})
-		cancel_observer.observe($("#register-modal")[0], { attributes: true, attributeFilter: ["class"] })
-
-		const remove_observer = () => {
-			$("#register-submit").off("click", submit)
-			cancel_observer.disconnect()
-		}
 	})
 }
