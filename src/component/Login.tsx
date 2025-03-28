@@ -1,5 +1,6 @@
 import { type Component, createSignal } from "solid-js"
 import { api, Auth } from "../api"
+import { match } from "ts-pattern"
 
 const [errorMessage, setErrorMessage] = createSignal("")
 
@@ -38,19 +39,23 @@ export function login() {
 	return new Promise<Auth>((resolve, reject) => {
 		showLoginModal()
 
+		const set_error_message = (msg: string) => {
+			setErrorMessage(msg)
+			$("#login-error-message").show()
+		}
+
 		const submit = async () => {
 			const username = String($("#login-modal input[name='username']").val())
 			const password = String($("#login-modal input[name='password']").val())
 
 			const response = await api.login({ username, password })
-			console.log(response)
-			if (response.type === "Success") {
-				resolve(response.content)
-				$("#login-modal").modal("hide")
-			} else {
-				setErrorMessage(String(response.type))
-				$("#login-error-message").show()
-			}
+			match(response)
+				.with({ type: "FailureIncorrect" }, () => set_error_message("用户名或密码错误"))
+				.with({ type: "Success" }, response => {
+					resolve(response.content)
+					$("#login-modal").modal("hide")
+				})
+				.exhaustive()
 		}
 		$("#login-submit").on("click", submit)
 
@@ -58,7 +63,7 @@ export function login() {
 			if ($("#login-modal").hasClass("hidden")) {
 				removeObserver()
 				// If not resolved, this reject will take effect
-				reject(new Error("login canceled"))
+				reject(new Error("login cancelled"))
 			}
 		})
 		cancelObserver.observe($("#login-modal")[0], { attributes: true, attributeFilter: ["class"] })
