@@ -1,7 +1,7 @@
-import { type Component, createSignal } from "solid-js";
-import { api } from "../api";
+import { type Component, createSignal } from "solid-js"
+import { api } from "../api"
 
-const [errorMessage, setErrorMessage] = createSignal("");
+const [errorMessage, setErrorMessage] = createSignal("")
 
 export const LoginModal: Component = () => {
 	return (
@@ -31,47 +31,47 @@ export const LoginModal: Component = () => {
 				</form>
 			</div>
 		</div>
-	);
+	)
 }
 
 function showLoginModal() {
-	$("#login-modal").modal("show");
+	$("#login-modal").modal("show")
 }
 
 export function login() {
 	return new Promise((res, rej) => {
-		showLoginModal();
+		showLoginModal()
 
 		const submit = async () => {
-			const username = String($("#login-modal input[name='username']").val());
-			const password = String($("#login-modal input[name='password']").val());
+			const username = String($("#login-modal input[name='username']").val())
+			const password = String($("#login-modal input[name='password']").val())
 
-			let token = "";
+			let token = ""
 			try {
-				const loginResponse = await api.login({ username, password });
-				token = loginResponse.token;
-				console.log("登录成功，token:", token);
-				removeObserver();
-				return res(token);
+				const loginResponse = await api.login({ username, password })
+				token = loginResponse.token
+				console.log("登录成功，token:", token)
+				removeObserver()
+				return res(token)
 			} catch (err) {
-				setErrorMessage(String(err));
-				$("#error-message").show();
-				console.log("登录失败:", err);
+				setErrorMessage(String(err))
+				$("#error-message").show()
+				console.log("登录失败:", err)
 			}
-		};
-		$("#login-submit").on("click", submit);
+		}
+		$("#login-submit").on("click", submit)
 
 		const cancelObserver = new MutationObserver(() => {
 			if ($("#login-modal").hasClass("hidden")) {
-				removeObserver();
-				rej(new Error("登录被取消"));
+				removeObserver()
+				rej(new Error("登录被取消"))
 			}
-		});
-		cancelObserver.observe($("#login-modal")[0], { attributes: true, attributeFilter: ["class"] });
+		})
+		cancelObserver.observe($("#login-modal")[0], { attributes: true, attributeFilter: ["class"] })
 
 		const removeObserver = () => {
-			$("#login-submit").off("click", submit);
-			cancelObserver.disconnect();
+			$("#login-submit").off("click", submit)
+			cancelObserver.disconnect()
 		}
-	});
+	})
 }

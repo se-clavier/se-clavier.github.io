@@ -8,11 +8,11 @@ import styles from "./App.module.css"
 const App: Component = () => {
 	const trylogin = () => {
 		login().then(token => {
-			console.log("登录成功，token:", token);
+			console.log("登录成功，token:", token)
 		}).catch(err => {
-			console.log("登录失败:", err);
-		});
-	};
+			console.log("登录失败:", err)
+		})
+	}
 
 	return (
 		<>
