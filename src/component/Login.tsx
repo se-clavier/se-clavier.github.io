@@ -22,7 +22,7 @@ export const LoginModal: Component = () => {
 					</div>
 					<div class="field"></div>
 					<div class="ui button" id="login-submit">提交</div>
-					<div class="ui error message" id="error-message">
+					<div class="ui error message" id="login-error-message">
 						<div class="header">
 							登录失败
 						</div>
@@ -55,7 +55,7 @@ export function login() {
 				return res(token)
 			} catch (err) {
 				setErrorMessage(String(err))
-				$("#error-message").show()
+				$("#login-error-message").show()
 				console.log("登录失败:", err)
 			}
 		}
