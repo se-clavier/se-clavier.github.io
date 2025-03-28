@@ -51,9 +51,9 @@ export function register() {
 		const submit = async () => {
 			const username = String($("#register-modal input[name='username']").val())
 			const password = String($("#register-modal input[name='password']").val())
-			const passwordRepeat = String($("#register-modal input[name='password-repeat']").val())
+			const password_repeat = String($("#register-modal input[name='password-repeat']").val())
 
-			if (password !== passwordRepeat) {
+			if (password !== password_repeat) {
 				set_error_message("两次输入的密码不一致")
 				$("#register-error-message").show()
 			} else {
