@@ -2,7 +2,7 @@ import { type Component, createSignal } from "solid-js"
 import { api, Auth } from "../api"
 import { match } from "ts-pattern"
 
-const [errorMessage, setErrorMessage] = createSignal("")
+const [error_message, set_error_message] = createSignal("")
 
 export const LoginModal: Component = () => {
 	return (
@@ -23,7 +23,7 @@ export const LoginModal: Component = () => {
 					<div class="ui button" id="login-submit"> 提交 </div>
 					<div class="ui error message" id="login-error-message">
 						<div class="header"> 登录失败 </div>
-						<p>{errorMessage()}</p>
+						<p>{error_message()}</p>
 					</div>
 				</form>
 			</div>
@@ -31,16 +31,16 @@ export const LoginModal: Component = () => {
 	)
 }
 
-function showLoginModal() {
+function show_login_modal() {
 	$("#login-modal").modal("show")
 }
 
 export function login() {
 	return new Promise<Auth>((resolve, reject) => {
-		showLoginModal()
+		show_login_modal()
 
-		const set_error_message = (msg: string) => {
-			setErrorMessage(msg)
+		const set_error = (msg: string) => {
+			set_error_message(msg)
 			$("#login-error-message").show()
 		}
 
@@ -50,7 +50,7 @@ export function login() {
 
 			const response = await api.login({ username, password })
 			match(response)
-				.with({ type: "FailureIncorrect" }, () => set_error_message("用户名或密码错误"))
+				.with({ type: "FailureIncorrect" }, () => set_error("用户名或密码错误"))
 				.with({ type: "Success" }, response => {
 					resolve(response.content)
 					$("#login-modal").modal("hide")
@@ -59,18 +59,18 @@ export function login() {
 		}
 		$("#login-submit").on("click", submit)
 
-		const cancelObserver = new MutationObserver(() => {
+		const cancel_observer = new MutationObserver(() => {
 			if ($("#login-modal").hasClass("hidden")) {
-				removeObserver()
+				remove_observer()
 				// If not resolved, this reject will take effect
 				reject(new Error("login cancelled"))
 			}
 		})
-		cancelObserver.observe($("#login-modal")[0], { attributes: true, attributeFilter: ["class"] })
+		cancel_observer.observe($("#login-modal")[0], { attributes: true, attributeFilter: ["class"] })
 
-		const removeObserver = () => {
+		const remove_observer = () => {
 			$("#login-submit").off("click", submit)
-			cancelObserver.disconnect()
+			cancel_observer.disconnect()
 		}
 	})
 }
