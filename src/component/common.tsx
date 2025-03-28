@@ -1,4 +1,4 @@
-export const form_field = (props: {
+export const FormField = (props: {
 	label: string,
 	name?: string,
 	type?: "text" | "password",
