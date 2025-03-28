@@ -1,4 +1,7 @@
-import { API, APICollection } from "../api"
+import { match, Pattern } from "ts-pattern"
+import { API, APICollection, Auth } from "../api"
+import { login } from "./component/Login"
+export type * from "../api"
 
 async function api_call(req: APICollection) {
 	const header = await fetch(import.meta.env.VITE_API_URL, {
@@ -12,4 +15,19 @@ async function api_call(req: APICollection) {
 	return header.json()
 }
 
-export const api = new API(api_call)
+function get_auth(): (refresh: boolean) => Promise<Auth> {
+	let auth: Auth | null = match(localStorage.getItem("auth"))
+		.with(null, () => null)
+		.with(Pattern.string, str => JSON.parse(str))
+		.exhaustive()
+
+	return async (refresh: boolean): Promise<Auth> => {
+		if (auth === null || refresh) {
+			auth = await login()
+			localStorage.setItem("auth", JSON.stringify(auth))
+		}
+		return auth
+	}
+}
+
+export const api = new API(api_call, get_auth())
