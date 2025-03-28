@@ -1,6 +1,7 @@
 import { type Component, createSignal } from "solid-js"
 import { api } from "../api"
 import { match } from "ts-pattern"
+import { form_field } from "./common"
 
 const [error_message, set_error_message] = createSignal("")
 
@@ -11,18 +12,9 @@ export const RegisterModal: Component = () => {
 			<div class="header"> 用户注册 </div>
 			<div class="content">
 				<form class="ui large form">
-					<div class="field">
-						<label>用户名</label>
-						<input type="text" name="username" placeholder="用户名" />
-					</div>
-					<div class="field">
-						<label>密码</label>
-						<input type="password" name="password" placeholder="密码" />
-					</div>
-					<div class="field">
-						<label>确认密码</label>
-						<input type="password" name="password-repeat" placeholder="确认密码" />
-					</div>
+					{form_field({ label: "用户名", name: "username", })}
+					{form_field({ label: "密码", name: "password", type: "password" })}
+					{form_field({ label: "确认密码", name: "password-repeat", type: "password" })}
 					<div class="ui button" id="register-submit">提交</div>
 					<div class="ui error message" id="register-error-message">
 						<div class="header"> 注册失败 </div>
