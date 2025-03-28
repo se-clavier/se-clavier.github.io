@@ -1,7 +1,6 @@
-import { match } from "ts-pattern"
+import { match, Pattern } from "ts-pattern"
 import { API, APICollection, Auth } from "../api"
 import { login } from "./component/Login"
-import { string } from "ts-pattern/dist/patterns"
 export type * from "../api"
 
 async function api_call(req: APICollection) {
@@ -19,7 +18,7 @@ async function api_call(req: APICollection) {
 function get_auth(): (refresh: boolean) => Promise<Auth> {
 	let auth: Auth | null = match(localStorage.getItem("auth"))
 		.with(null, () => null)
-		.with(string, str => JSON.parse(str))
+		.with(Pattern.string, str => JSON.parse(str))
 		.exhaustive()
 
 	return async (refresh: boolean): Promise<Auth> => {
