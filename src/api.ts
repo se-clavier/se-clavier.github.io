@@ -1,4 +1,6 @@
 import { API, APICollection } from "../api"
+import { login } from "./component/Login"
+export type * from "../api"
 
 async function api_call(req: APICollection) {
 	const header = await fetch(import.meta.env.VITE_API_URL, {
@@ -12,4 +14,4 @@ async function api_call(req: APICollection) {
 	return header.json()
 }
 
-export const api = new API(api_call)
+export const api = new API(api_call, login)
