@@ -1,7 +1,7 @@
 import type { Component } from "solid-js"
-import { TopBar, SideBar } from "./component/Menu"
 import { LoginModal, login } from "./component/Login"
 import { RegisterModal, register } from "./component/Register"
+import { TopBar, SideBar } from "./component/Menu"
 
 import "fomantic-ui-css/semantic.min.css"
 import "fomantic-ui-css/semantic.min.js"
@@ -10,7 +10,7 @@ import styles from "./App.module.css"
 const App: Component = () => {
 	const trylogin = () => {
 		login().then(token => {
-			console.log("登录成功，token:", token)
+			console.log("登录成功:", token)
 		}).catch(err => {
 			console.log("登录失败:", err)
 		})

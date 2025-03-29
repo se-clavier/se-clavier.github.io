@@ -21,6 +21,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: Bogdanp/setup-racket@v1.11
+        with:
+          version: "stable"
       - name: Vite Github Pages Deployer
         uses: skywarth/vite-github-pages-deployer@v1.4.0
         id: deploy_to_pages
