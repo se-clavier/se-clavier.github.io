@@ -28,7 +28,7 @@ export const SideBar: Component = () => {
 }
 
 function toggleSidebar() {
-	$("#sidebar").sidebar('toggle')
+	$("#sidebar").sidebar("toggle")
 }
 
 export const TopBar: Component = () => {
