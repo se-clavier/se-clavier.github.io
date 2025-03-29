@@ -1,4 +1,5 @@
 import type { Component } from "solid-js"
+import { TopBar, SideBar } from "./component/Menu"
 import { LoginModal, login } from "./component/Login"
 import { RegisterModal, register } from "./component/Register"
 
@@ -24,12 +25,16 @@ const App: Component = () => {
 
 	return (
 		<>
-			<div class={styles.App}>
-				<p>
-					Edit <code>src/App.tsx</code> and save to reload.
-				</p>
-				<button onClick={trylogin}>登录</button>
-				<button onClick={tryregister}>注册</button>
+			<TopBar/>
+			<SideBar/>
+			<div class="ui container" style="margin-top: 53px; height: calc(100% - 53px); overflow-y: auto;">
+				<div class={styles.App}>
+					<p>
+						Edit <code>src/App.tsx</code> and save to reload.
+					</p>
+					<button onClick={trylogin}>登录</button>
+					<button onClick={tryregister}>注册</button>
+				</div>
 			</div>
 			<LoginModal/>
 			<RegisterModal/>
