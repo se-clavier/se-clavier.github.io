@@ -70,7 +70,8 @@ export const TopBar: Component = () => {
 							<div class="item">{user.username}</div>
 						))
 					}
-					<a class="icon item" onClick={toggleSidebar}
+					<a class="icon item" 
+						role="button" onClick={toggleSidebar}
 						tabindex="0" onKeyDown={
 							event => match(event.key)
 								.with("Enter", () => $("#sidebar").sidebar("show"))
