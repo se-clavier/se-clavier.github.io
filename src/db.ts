@@ -2,7 +2,7 @@ import { Auth } from "api"
 import { match, Pattern } from "ts-pattern"
 
 class PersistentStorage<T> {
-	private id: string
+	private readonly id: string
 
 	constructor(id: string) {
 		this.id = id
