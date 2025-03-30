@@ -9,7 +9,7 @@ class PersistentStorage<T> {
 	}
 
 	get(): T | null {
-		return match(localStorage.getItem("auth"))
+		return match(localStorage.getItem(this.id))
 			.with(null, () => null)
 			.with(Pattern.string, str => JSON.parse(str))
 			.exhaustive()
