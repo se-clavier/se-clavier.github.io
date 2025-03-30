@@ -1,6 +1,6 @@
-import { match, Pattern } from "ts-pattern"
 import { API, APICollection, Auth } from "../api"
 import { login } from "./component/Login"
+import { db } from "./db"
 export type * from "../api"
 
 async function api_call(req: APICollection) {
@@ -16,17 +16,12 @@ async function api_call(req: APICollection) {
 }
 
 function get_auth(): (refresh: boolean) => Promise<Auth> {
-	let auth: Auth | null = match(localStorage.getItem("auth"))
-		.with(null, () => null)
-		.with(Pattern.string, str => JSON.parse(str))
-		.exhaustive()
-
 	return async (refresh: boolean): Promise<Auth> => {
-		if (auth === null || refresh) {
-			auth = await login()
-			localStorage.setItem("auth", JSON.stringify(auth))
+		if (refresh) {
+			return db.auth.set(await login())
+		} else {
+			return db.auth.get_with(() => login())
 		}
-		return auth
 	}
 }
 

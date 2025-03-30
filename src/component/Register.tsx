@@ -1,5 +1,5 @@
 import { type Component, createSignal } from "solid-js"
-import { api } from "../api"
+import { api, Auth } from "../api"
 import { match } from "ts-pattern"
 import { FormField } from "./common"
 
@@ -31,7 +31,7 @@ function show_register_modal() {
 }
 
 export function register() {
-	return new Promise(resolve => {
+	return new Promise<Auth>(resolve => {
 		show_register_modal()
 
 		const set_error = (msg: string) => {

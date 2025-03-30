@@ -1,34 +1,60 @@
-import { Show, type Component } from "solid-js"
+import { createSignal, type Component } from "solid-js"
 import { register } from "./Register"
 import { login } from "./Login"
+import { match } from "ts-pattern"
+import { db } from "../db"
+import { api, User } from "../api"
+
+const [user, set_user] = createSignal<User | null>(null)
 
 export const SideBar: Component = () => {
+	const sidebar_login = async () => {
+		const auth = await login()
+		db.auth.set(auth)
+		set_user(await api.get_user(auth.id))
+	}
+
+	const sidebar_register = async () => {
+		const auth = await register()
+		db.auth.set(auth)
+		set_user(await api.get_user(auth.id))
+	}
+
+	const sidebar_logout = () => {
+		db.auth.unset()
+		set_user(null)
+	}
+
 	return (
 		<div class="ui right vertical sidebar menu" id="sidebar">
-			<Show
-				when={true} // TODO: replace with user login status
-				fallback={
+			{match(user())
+				.with(null, () => (
 					<a class="item">
 						<div class="ui fluid buttons">
-							<button class="ui button" onClick={login}>登录</button>
-							<button class="ui primary button" onClick={register}>注册</button>
+							<button class="ui button" onClick={sidebar_login}>登录</button>
+							<button class="ui primary button" onClick={sidebar_register}>注册</button>
 						</div>
 					</a>
-				}
-			>
-				<a class="item">欢迎你，username</a>
-				<a class="item">
-					<button class="ui fluid button"> {/*TODO: onClick={logout}*/}
-						注销
-					</button>
-				</a>
-			</Show>
+				))
+				.otherwise(user => (
+					<>
+						<a class="item">欢迎你，{user.username}</a>
+						<a class="item">
+							<button class="ui fluid button" onClick={sidebar_logout}>
+								注销
+							</button>
+						</a>
+					</>
+				))
+			}
 		</div>
 	)
 }
 
 function toggleSidebar() {
-	$("#sidebar").sidebar("toggle")
+	$("#sidebar")
+		.sidebar("setting", "transition", "overlay")
+		.sidebar("toggle")
 }
 
 export const TopBar: Component = () => {
@@ -36,12 +62,18 @@ export const TopBar: Component = () => {
 		<div class="ui borderless top fixed menu">
 			<div class="ui container">
 				<a class="item" href="/">
-					<img src="https://avatars.githubusercontent.com/u/199693511"/>
+					<img src="https://avatars.githubusercontent.com/u/199693511" />
 					<div>Clavier</div>
 				</a>
 				<div class="right menu">
+					{match(user())
+						.with(null, () => <></>)
+						.otherwise(user => (
+							<div class="item">{user.username}</div>
+						))
+					}
 					<a class="icon item" onClick={toggleSidebar}>
-						<i class="bars icon"/>
+						<i class="bars icon" />
 					</a>
 				</div>
 			</div>
