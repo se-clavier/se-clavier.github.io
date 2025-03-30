@@ -52,9 +52,7 @@ export const SideBar: Component = () => {
 }
 
 function toggleSidebar() {
-	$("#sidebar")
-		.sidebar("setting", "transition", "overlay")
-		.sidebar("toggle")
+	$("#sidebar").sidebar("toggle")
 }
 
 export const TopBar: Component = () => {
@@ -72,7 +70,12 @@ export const TopBar: Component = () => {
 							<div class="item">{user.username}</div>
 						))
 					}
-					<a class="icon item" onClick={toggleSidebar}>
+					<a class="icon item" onClick={toggleSidebar}
+						tabindex="0" onKeyDown={
+							event => match(event.key)
+								.with("Enter", () => $("#sidebar").sidebar("show"))
+								.with("Escape", () => $("#sidebar").sidebar("hide"))
+						}>
 						<i class="bars icon" />
 					</a>
 				</div>
