@@ -60,7 +60,7 @@ export const TopBar: Component = () => {
 		<div class="ui borderless top fixed menu">
 			<div class="ui container">
 				<a class="item" href="/">
-					<img src="https://avatars.githubusercontent.com/u/199693511" />
+					<img alt="" src="https://avatars.githubusercontent.com/u/199693511" />
 					<div>Clavier</div>
 				</a>
 				<div class="right menu">
