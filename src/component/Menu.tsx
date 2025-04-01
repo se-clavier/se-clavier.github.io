@@ -5,7 +5,14 @@ import { match } from "ts-pattern"
 import { db } from "../db"
 import { api, User } from "../api"
 
-const [user, set_user] = createSignal<User | null>(null)
+const [user, set_user] = createSignal<User | null>(null);
+
+(async () => {
+	const auth = await db.auth.get()
+	if (auth) {
+		set_user(await api.get_user(auth.id))
+	}
+})()
 
 export const SideBar: Component = () => {
 	const sidebar_login = async () => {
@@ -70,7 +77,7 @@ export const TopBar: Component = () => {
 							<div class="item">{user.username}</div>
 						))
 					}
-					<a class="icon item" 
+					<a class="icon item"
 						role="button" onClick={toggleSidebar}
 						tabindex="0" onKeyDown={
 							event => match(event.key)
