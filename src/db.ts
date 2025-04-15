@@ -1,46 +1,64 @@
-import { Auth } from "api"
-import { match, Pattern } from "ts-pattern"
+import { Auth, User } from "api"
+import { Accessor, createEffect, createSignal, Setter } from "solid-js"
+import { match } from "ts-pattern"
+import { api } from "./api"
 
-class PersistentStorage<T> {
-	private readonly id: string
+export class Signal<T> {
+	get: Accessor<T>;
+	set: Setter<T>;
+	constructor(init: T) {
+		[this.get, this.set] = createSignal<T>(init)
+	}
+}
+
+export class PersistentSignal<T> {
+	readonly get: Accessor<T | null>
+	readonly set: Setter<T | null>
 
 	constructor(id: string) {
-		this.id = id
+		[this.get, this.set] = createSignal<T | null>(
+			match(localStorage.getItem(id))
+				.with(null, () => null)
+				.otherwise(str => JSON.parse(str) as T)
+		)
+		createEffect(() => {
+			match(this.get())
+				.with(null, () => localStorage.removeItem(id))
+				.otherwise(data => localStorage.setItem(id, JSON.stringify(data)))
+		})
 	}
 
-	get(): T | null {
-		return match(localStorage.getItem(this.id))
-			.with(null, () => null)
-			.with(Pattern.string, str => JSON.parse(str))
-			.exhaustive()
-	}
-	
-	set(data: T): T {
-		localStorage.setItem(this.id, JSON.stringify(data))
-		return data
-	}
-	
 	async get_with(refresh: () => Promise<T>): Promise<T> {
 		const data = this.get()
 		if (data === null) {
 			const data = await refresh()
-			return this.set(data)
+			this.set(() => data)
+			return data
 		}
 		else {
 			return data
 		}
 	}
-	
+
 	unset() {
-		localStorage.removeItem(this.id)
+		this.set(null)
 	}
 }
 
 class DB {
-	auth: PersistentStorage<Auth>
+	auth: PersistentSignal<Auth>
+	user: Signal<User | null>
 
 	constructor() {
-		this.auth = new PersistentStorage("auth")
+		this.auth = new PersistentSignal("auth")
+		this.user = new Signal<User | null>(null)
+		createEffect(async () => {
+			this.user.set(
+				await match(this.auth.get())
+					.with(null, () => null)
+					.otherwise(auth => api.get_user(auth.id))
+			)
+		})
 	}
 }
 

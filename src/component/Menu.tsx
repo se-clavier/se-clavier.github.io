@@ -1,32 +1,24 @@
-import { createSignal, JSX, type Component } from "solid-js"
+import { Show, type Component } from "solid-js"
 import { match } from "ts-pattern"
 import { register } from "./Register"
 import { login } from "./Login"
 import { db } from "../db"
-import { api, User } from "../api"
-import { setMainApp } from "../App"
+import { mainApp } from "../App"
+import { AdminView } from "./Admin"
+import { Home } from "./Home"
+import { Settings } from "./Settings"
 
-const [user, set_user] = createSignal<User | null>(null);
-
-(async () => {
-	const auth = await db.auth.get()
-	if (auth) {
-		set_user(await api.get_user(auth.id))
+const app_goto = (app: Component) => {
+	return () => {
+		mainApp.set(() => app)
+		$("#sidebar").sidebar("hide")
 	}
-})()
+}
 
 export const SideBar: Component = () => {
 	const sidebar_logout = () => {
 		db.auth.unset()
-		set_user(null)
-		$("#sidebar").sidebar("hide")
-	}
-
-	const app_goto = (app: () => JSX.Element) => {
-		return () => {
-			setMainApp(app())
-			$("#sidebar").sidebar("hide")
-		}
+		app_goto(Home)()
 	}
 
 	return (
@@ -41,15 +33,17 @@ export const SideBar: Component = () => {
 				<i class="bars icon" />
 			</a>
 			<div class="ui right vertical sidebar menu" id="sidebar">
-				<a class="item" onClick={app_goto(() => <div> Home </div>)}>
+				<a class="item" onClick={app_goto(Home)}>
 					主页
 				</a>
-				<a class="item" onClick={app_goto(() => <div> Settings </div>)}>
+				<a class="item" onClick={app_goto(Settings)}>
 					设置
 				</a>
-				<a class="item" onClick={app_goto(() => <div> Admin </div>)}>
-					管理
-				</a>
+				<Show when={db.auth.get()?.roles.some(t => t.type === "admin")}>
+					<a class="item" onClick={app_goto(() => <AdminView />)}>
+						管理
+					</a>
+				</Show>
 				<a class="item" onClick={sidebar_logout}>
 					登出
 				</a>
@@ -64,15 +58,11 @@ function toggleSidebar() {
 
 export const TopBar: Component = () => {
 	const sidebar_login = async () => {
-		const auth = await login()
-		db.auth.set(auth)
-		set_user(await api.get_user(auth.id))
+		db.auth.set(await login())
 	}
 
 	const sidebar_register = async () => {
-		const auth = await register()
-		db.auth.set(auth)
-		set_user(await api.get_user(auth.id))
+		db.auth.set(await register())
 	}
 
 	return (
@@ -82,7 +72,7 @@ export const TopBar: Component = () => {
 					<img alt="" src="https://avatars.githubusercontent.com/u/199693511" />
 					<div>Clavier</div>
 				</a>
-				{match(user())
+				{match(db.user.get())
 					.with(null, () => (
 						<div class="right menu">
 							<a class="ui item" onClick={sidebar_login}>

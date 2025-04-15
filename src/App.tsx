@@ -1,13 +1,16 @@
-import { createSignal, type Component } from "solid-js"
+import { type Component } from "solid-js"
+import { Dynamic } from "solid-js/web"
 import { LoginModal } from "./component/Login"
 import { RegisterModal } from "./component/Register"
 import { TopBar } from "./component/Menu"
+import { Home } from "./component/Home"
 
 import "fomantic-ui-css/semantic.min.css"
 import "fomantic-ui-css/semantic.min.js"
+import { Signal } from "./db"
 
-const [mainApp, _setMainApp] = createSignal(<div> initial </div>)
-export const setMainApp = _setMainApp
+
+export const mainApp = new Signal<Component>(Home)
 
 const App: Component = () => {
 	return (
@@ -15,7 +18,7 @@ const App: Component = () => {
 			<div class="pusher">
 				<TopBar />
 				<div class="ui container">
-					{mainApp()}
+					<Dynamic component={mainApp.get()} />
 				</div>
 			</div>
 			<LoginModal />

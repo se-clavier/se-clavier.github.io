@@ -1,6 +1,5 @@
 import { API, APICollection, Auth } from "../api"
 import { login } from "./component/Login"
-import { db } from "./db"
 export type * from "../api"
 
 async function api_call(req: APICollection) {
@@ -15,14 +14,13 @@ async function api_call(req: APICollection) {
 	return header.json()
 }
 
-function get_auth(): (refresh: boolean) => Promise<Auth> {
-	return async (refresh: boolean): Promise<Auth> => {
-		if (refresh) {
-			return db.auth.set(await login())
-		} else {
-			return db.auth.get_with(() => login())
-		}
+async function get_auth(refresh: boolean): Promise < Auth > {
+	const { db } = await import("./db")
+	if(refresh) {
+		return db.auth.set(await login())
+	} else {
+		return db.auth.get_with(() => login())
 	}
 }
 
-export const api = new API(api_call, get_auth())
+export const api = new API(api_call, get_auth)
