@@ -15,7 +15,7 @@ const [user, set_user] = createSignal<User | null>(null);
 	}
 })()
 
-export const SideBar: Component<User> = (user: User) => {
+export const SideBar: Component = () => {
 	const sidebar_logout = () => {
 		db.auth.unset()
 		set_user(null)
@@ -41,9 +41,6 @@ export const SideBar: Component<User> = (user: User) => {
 				<i class="bars icon" />
 			</a>
 			<div class="ui right vertical sidebar menu" id="sidebar">
-				<div class="item">
-					欢迎你，{user.username}
-				</div>
 				<a class="item" onClick={app_goto(() => <div> Home </div>)}>
 					主页
 				</a>
@@ -99,7 +96,9 @@ export const TopBar: Component = () => {
 					.otherwise(user => (
 						<div class="right menu">
 							<div class="item">{user.username}</div>
-							<SideBar {...user} />
+							{/* This SideBar component will be moved by FomanticJS, so it cannot handle signal */}
+							{/* TODO: use other component that will not be moved */}
+							<SideBar />
 						</div>
 					))}
 			</div>
