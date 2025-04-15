@@ -1,17 +1,22 @@
-import type { Component } from "solid-js"
+import { createSignal, type Component } from "solid-js"
 import { LoginModal } from "./component/Login"
 import { RegisterModal } from "./component/Register"
-import { TopBar, SideBar } from "./component/Menu"
+import { TopBar } from "./component/Menu"
 
 import "fomantic-ui-css/semantic.min.css"
 import "fomantic-ui-css/semantic.min.js"
 
+const [mainApp, _setMainApp] = createSignal(<div> initial </div>)
+export const setMainApp = _setMainApp
+
 const App: Component = () => {
 	return (
 		<>
-			<SideBar />
 			<div class="pusher">
 				<TopBar />
+				<div class="ui container">
+					{mainApp()}
+				</div>
 			</div>
 			<LoginModal />
 			<RegisterModal />
