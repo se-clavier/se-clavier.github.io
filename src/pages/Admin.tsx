@@ -1,26 +1,15 @@
 import { Component } from "solid-js"
 import { MenuViewer } from "../lib/MenuViewer"
+import { FormField } from "../lib/common"
 
 const UserManage: Component = () => {
 	return (
 		<div class="ui form">
 			<h4 class="ui dividing header"> 修改密码 </h4>
 			<div class="inline fields">
-				<div class="field">
-					<label>
-						用户名
-						<input type="text" placeholder="用户名" />
-					</label>
-				</div>
-				<div class="field">
-					<label>
-						新密码
-						<input type="password" placeholder="新密码" />
-					</label>
-				</div>
-				<div class="field">
-					<div class="ui button" tabindex="0"> 修改 </div>
-				</div>
+				<FormField label="用户名" name="username" />
+				<FormField label="新密码" name="password" type="password" />
+				<div class="ui button" tabindex="0"> 修改 </div>
 			</div>
 		</div>
 	)
