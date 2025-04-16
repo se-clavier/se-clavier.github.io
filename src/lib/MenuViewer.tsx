@@ -13,12 +13,14 @@ export const MenuViewer: Component<MenuItem[]> = (props: MenuItem[]) => {
 		<>
 			<div class="ui top attached tabular menu">
 				{props.map((item, index) => (
-					<a classList={{
-						item: true,
-						active: index === current(),
-					}} role="button" onClick={() => {
-						setCurrent(index)
-					}}>
+					<a role="button" tabIndex="0"
+						classList={{
+							item: true,
+							active: index === current(),
+						}} 
+						onClick={() => {
+							setCurrent(index)
+						}}>
 						{item.name}
 					</a>
 				))}

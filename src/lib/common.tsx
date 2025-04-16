@@ -25,3 +25,14 @@ export const Loader = () => <div class="ui segment">
 		<div class="ui text loader" />
 	</div>
 </div>
+
+export const LinkButton = (props: {
+	onClick: () => void,
+	label: string,
+}) => {
+	return (
+		<a class="item" onClick={props.onClick} role="button" tabindex="0">
+			{props.label}
+		</a>
+	)	
+}

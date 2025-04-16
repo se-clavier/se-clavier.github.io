@@ -10,7 +10,7 @@ const UserManage: Component = () => {
 			<div class="inline fields">
 				<FormField label="用户名" name="username" />
 				<FormField label="新密码" name="password" type="password" />
-				<div class="ui button" tabindex="0"> 修改 </div>
+				<button class="ui button" tabindex="0"> 修改 </button>
 			</div>
 		</div>
 	)

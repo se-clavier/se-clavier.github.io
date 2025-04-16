@@ -7,6 +7,7 @@ import { mainApp } from "../App"
 import { Admin } from "../pages/Admin"
 import { Home } from "../pages/Home"
 import { Settings } from "../pages/Settings"
+import { LinkButton } from "../lib/common"
 
 const app_goto = (app: Component) => {
 	return () => {
@@ -23,9 +24,9 @@ export const SideBar: Component = () => {
 
 	return (
 		<>
-			<a class="icon item"
-				role="button" onClick={toggleSidebar}
-				tabindex="0" onKeyDown={
+			<a class="icon item" role="button" tabindex="0" 
+				onClick={toggleSidebar}
+				onKeyDown={
 					event => match(event.key)
 						.with("Enter", () => $("#sidebar").sidebar("show"))
 						.with("Escape", () => $("#sidebar").sidebar("hide"))
@@ -33,20 +34,12 @@ export const SideBar: Component = () => {
 				<i class="bars icon" />
 			</a>
 			<div class="ui right vertical sidebar menu" id="sidebar">
-				<a class="item" onClick={app_goto(Home)}>
-					主页
-				</a>
-				<a class="item" onClick={app_goto(Settings)}>
-					设置
-				</a>
+				<LinkButton label="主页" onClick={app_goto(Home)} />
+				<LinkButton label="设置" onClick={app_goto(Settings)} />
 				<Show when={db.auth.get()?.roles.some(t => t.type === "admin")}>
-					<a class="item" onClick={app_goto(Admin)}>
-						管理
-					</a>
+					<LinkButton label="管理" onClick={app_goto(Admin)} />
 				</Show>
-				<a class="item" onClick={sidebar_logout}>
-					登出
-				</a>
+				<LinkButton label="登出" onClick={sidebar_logout} />
 			</div>
 		</>
 	)
@@ -75,12 +68,8 @@ export const TopBar: Component = () => {
 				{match(db.user.get())
 					.with(null, () => (
 						<div class="right menu">
-							<a class="ui item" onClick={sidebar_login}>
-								登陆
-							</a>
-							<a class="ui item" onClick={sidebar_register}>
-								注册
-							</a>
+							<LinkButton label="登录" onClick={sidebar_login} />
+							<LinkButton label="注册" onClick={sidebar_register} />
 						</div>
 					))
 					.otherwise(user => (
