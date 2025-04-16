@@ -4,9 +4,9 @@ import { register } from "./Register"
 import { login } from "./Login"
 import { db } from "../db"
 import { mainApp } from "../App"
-import { AdminView } from "./Admin"
-import { Home } from "./Home"
-import { Settings } from "./Settings"
+import { Admin } from "../pages/Admin"
+import { Home } from "../pages/Home"
+import { Settings } from "../pages/Settings"
 
 const app_goto = (app: Component) => {
 	return () => {
@@ -40,7 +40,7 @@ export const SideBar: Component = () => {
 					设置
 				</a>
 				<Show when={db.auth.get()?.roles.some(t => t.type === "admin")}>
-					<a class="item" onClick={app_goto(() => <AdminView />)}>
+					<a class="item" onClick={app_goto(Admin)}>
 						管理
 					</a>
 				</Show>

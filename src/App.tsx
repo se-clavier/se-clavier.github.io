@@ -3,7 +3,7 @@ import { Dynamic } from "solid-js/web"
 import { LoginModal } from "./component/Login"
 import { RegisterModal } from "./component/Register"
 import { TopBar } from "./component/Menu"
-import { Home } from "./component/Home"
+import { Home } from "./pages/Home"
 
 import "fomantic-ui-css/semantic.min.css"
 import "fomantic-ui-css/semantic.min.js"

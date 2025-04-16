@@ -32,7 +32,7 @@ const SpareManage: Component = () => {
 	)
 }
 
-export const AdminView: Component = () => {
+export const Admin: Component = () => {
 	return MenuViewer([
 		{
 			name: "用户管理",
