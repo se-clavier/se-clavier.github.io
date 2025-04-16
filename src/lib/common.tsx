@@ -18,3 +18,10 @@ export const FormField = (props: {
 		</div>
 	)
 }
+
+export const Loader = () => <div class="ui segment">
+	<div style={{ "height": "100px" }} />
+	<div class="ui dimmer inverted active">
+		<div class="ui text loader" />
+	</div>
+</div>

@@ -2,7 +2,7 @@ import { Component } from "solid-js"
 import { FormField } from "../lib/common"
 
 export const Settings: Component = () => {
-	// TODO: Finish this component
+	// TODO[Early]: Finish this component
 	return (
 		<>
 			<div class="ui form">

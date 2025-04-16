@@ -3,6 +3,7 @@ import { MenuViewer } from "../lib/MenuViewer"
 import { FormField } from "../lib/common"
 
 const UserManage: Component = () => {
+	// TODO[Early]: Finish this component
 	return (
 		<div class="ui form">
 			<h4 class="ui dividing header"> 修改密码 </h4>
@@ -16,6 +17,7 @@ const UserManage: Component = () => {
 }
 
 const SpareManage: Component = () => {
+	// TODO: Implement spare management
 	return (
 		<p> Spare Manage </p>
 	)
