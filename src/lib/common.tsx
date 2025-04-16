@@ -1,3 +1,6 @@
+import { splitProps } from "solid-js"
+import { JSX } from "solid-js/jsx-runtime"
+
 export const FormField = (props: {
 	label: string,
 	name?: string,
@@ -27,12 +30,19 @@ export const Loader = () => <div class="ui segment">
 </div>
 
 export const LinkButton = (props: {
-	onClick: () => void,
 	label: string,
-}) => {
+	onClick: () => void,
+} & JSX.HTMLAttributes<HTMLAnchorElement>) => {
+	const [local, rest] = splitProps(props, ["label", "onClick"])
 	return (
-		<a class="item" onClick={props.onClick} role="button" tabindex="0">
-			{props.label}
+		<a class="item" {...rest} role="button" tabindex="0"
+			onClick={local.onClick}
+			onKeyDown={event => {
+				if (event.key === "Enter") {
+					local.onClick()
+				}
+			}}>
+			{local.label}
 		</a>
-	)	
+	)
 }

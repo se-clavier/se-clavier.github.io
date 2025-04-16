@@ -1,5 +1,6 @@
 import { Component, createSignal } from "solid-js"
 import { Dynamic } from "solid-js/web"
+import { LinkButton } from "./common"
 
 export type MenuItem = {
 	name: string,
@@ -13,16 +14,10 @@ export const MenuViewer: Component<MenuItem[]> = (props: MenuItem[]) => {
 		<>
 			<div class="ui top attached tabular menu">
 				{props.map((item, index) => (
-					<a role="button" tabIndex="0"
-						classList={{
-							item: true,
-							active: index === current(),
-						}} 
-						onClick={() => {
-							setCurrent(index)
-						}}>
-						{item.name}
-					</a>
+					<LinkButton 
+						label={item.name} 
+						classList={{ active: index === current() }}
+						onClick={() => setCurrent(index)}/>
 				))}
 			</div>
 			<div class="ui bottom attached segment">
