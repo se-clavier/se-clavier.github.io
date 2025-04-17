@@ -1,7 +1,7 @@
 import { type Component, createSignal } from "solid-js"
 import { api, Auth } from "../api"
 import { match } from "ts-pattern"
-import { FormField } from "./common"
+import { FormField } from "../lib/common"
 
 const [error_message, set_error_message] = createSignal("")
 
