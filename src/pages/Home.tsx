@@ -7,8 +7,8 @@ import { addDays, format, getISOWeek, getISOWeekYear, parseISO } from "date-fns"
 import { MenuViewer } from "../lib/MenuViewer"
 
 const year = getISOWeekYear(Date.now())
-const [week, setWeek] = createSignal(getISOWeek(Date.now()))
-const weekDayLabels = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+const [week, set_week] = createSignal(getISOWeek(Date.now()))
+const weekday_labels = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
 const blocks = ((begin_time, end_time) => {
 	const blocks = []
 	for (let i = begin_time; i < end_time; i += 30) {
@@ -27,14 +27,14 @@ function parseISODurationToMinutes(duration: string): number {
 
 	if (!match) throw new Error("Invalid ISO 8601 duration")
 
-	const [, h, m, ] = match
+	const [, h, m,] = match
 	const hours = parseInt(h || "0", 10)
 	const minutes = parseInt(m || "0", 10)
 
 	return hours * 60 + minutes
 }
 
-type ParsedSpare = {
+type SpareDisplay = {
 	id: number
 	stamp: number
 	week: string
@@ -47,37 +47,38 @@ type ParsedSpare = {
 	}
 }
 
-const SpareTd = (props: {spare: ParsedSpare, userId?: number}) => {
+type SpareTdStyle = "Mine" | "Taken" | "Available"
+const SpareTd = (props: { spare: SpareDisplay, style: SpareTdStyle }) => {
 	let cellRef: HTMLTableCellElement | undefined
 	let popupRef: HTMLDivElement | undefined
 	const spare = props.spare
 
 	const rowSpan = Math.round((spare.end_time - spare.begin_time) / 30)
 	let color, tdText, popupButton, popupDescription
-	if (spare.assignee === undefined) {
+	if (props.style === "Available") {
 		color = "blue"
 		tdText = "空闲"
-		popupButton = <div class="ui button">预约</div>
+		popupButton = <div class="ui button"> 预约 </div>
+		popupDescription = ""
+	} else if (props.style === "Mine") {
+		color = "green"
+		tdText = spare.assignee?.username
+		popupButton = <div class="ui button">取消预约</div>
 		popupDescription = ""
 	} else {
-		if (props.userId && spare.assignee.id == props.userId) {
-			color = "green"
-			tdText = "已预约"
-			popupButton = <div class="ui button">取消预约</div>
-			popupDescription = ""
-		} else {
-			color = "yellow"
-			tdText = "已占用"
-			popupButton = <></>
-			popupDescription = `预约人：${spare.assignee.username}`
-		}
+		color = "white"
+		tdText = spare.assignee?.username
+		popupButton = <></>
+		popupDescription = `预约人：${spare.assignee?.username}`
 	}
 
 	onMount(() => {
-		if (cellRef && popupRef) {$(cellRef).popup({
-			popup: $(popupRef),
-			on: "click",
-		})}
+		if (cellRef && popupRef) {
+			$(cellRef).popup({
+				popup: $(popupRef),
+				on: "click",
+			})
+		}
 	})
 
 	return <>
@@ -124,7 +125,7 @@ const Calendar = (props: { user: User, spares: Spares, room: string }) => {
 						<For each={weekDates}>
 							{(date, i) => (
 								<th>
-									{weekDayLabels[i()]}
+									{weekday_labels[i()]}
 									<br />
 									{format(date, "M-d")}
 								</th>
@@ -146,7 +147,12 @@ const Calendar = (props: { user: User, spares: Spares, room: string }) => {
 										<Show when={!isCovered(i() + 1, block)}>
 											{match(findMatched(i() + 1, block))
 												.with(undefined, () => <td style={tdStyle}></td>)
-												.otherwise(spare => <SpareTd spare={spare} userId={props.user.id} />)
+												.otherwise(spare => <SpareTd spare={spare} style={
+													match(spare.assignee)
+														.with(undefined, () => "Available" as SpareTdStyle)
+														.with({ id: props.user.id }, () => "Mine" as SpareTdStyle)
+														.otherwise(() => "Taken" as SpareTdStyle)
+												} />)
 											}
 										</Show>
 									)}
@@ -230,23 +236,23 @@ const Main = (props: { user: User }) => {
 	// TODO: Add Week Selector
 	// (use date-fns, getISOWeek)
 
-	const [spares] = createResource<Spares>(async () => {
+	const [data] = createResource(async () => {
 		// return await api.spare_list({ ... })
 		await new Promise(resolve => setTimeout(resolve, 1000))
-		return demo_spares
+		return { spares: demo_spares, rooms: ["205", "208"] }
 	})
 
 	return <> {
-		match(spares())
+		match(data())
 			.with(undefined, () => <Loader />)
-			.otherwise(spares => <>
+			.otherwise(data => <>
 				<MenuViewer {...["205", "208"].map(room => ({
 					name: room,
-					component: () => <Calendar user={props.user} spares={spares} room={room} />,
-				}))}></MenuViewer>
+					component: () => <Calendar user={props.user} spares={data.spares} room={room} />,
+				}))} />
 				{/* <Calendar user={props.user} spares={spares} room={"205"} /> */}
-				<MySpares spares={spares.filter(spare => spare.assignee && spare.assignee.id === props.user.id)} />
-				<AvailableSpares spares={spares.filter(spare => spare.assignee === undefined)} />
+				<MySpares spares={data.spares.filter(spare => spare.assignee && spare.assignee.id === props.user.id)} />
+				<AvailableSpares spares={data.spares.filter(spare => spare.assignee === undefined)} />
 			</>)
 	}
 	</>
