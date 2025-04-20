@@ -4,6 +4,7 @@ import { match } from "ts-pattern"
 import { Spare, Spares, User } from "../api"
 import { Loader } from "../lib/common"
 import { addDays, format, getISOWeek, getISOWeekYear, parseISO } from "date-fns"
+import { MenuViewer } from "../lib/MenuViewer"
 
 const year = getISOWeekYear(Date.now());
 const [week, setWeek] = createSignal(getISOWeek(Date.now()))
@@ -33,22 +34,45 @@ function parseISODurationToMinutes(duration: string): number {
 	return hours * 60 + minutes;
 }
 
-const SpareTd = (props: {spare: Spare, userId: number}) => {
+type ParsedSpare = {
+	id: number
+	stamp: number
+	week: string
+	begin_time: number
+	end_time: number
+	room: string
+	assignee?: {
+		id: number
+		username: string
+	}
+}
+
+const SpareTd = (props: {spare: ParsedSpare, userId?: number}) => {
 	let cellRef: HTMLTableCellElement | undefined
 	let popupRef: HTMLDivElement | undefined
 	const spare = props.spare
 
-	const rowSpan = Math.round((parseISODurationToMinutes(spare.end_time) - parseISODurationToMinutes(spare.begin_time)) / 30);
-	const [color, tdText, popupText, popupDescription] = match(spare.assignee)
-		.with(undefined, () => ["blue", "空闲", "预约"])
-		.otherwise(assignee => {
-			if (assignee.id == props.userId) {
-				return ["green", "已预约", "取消预约"]
-			} else {
-				return ["yellow", "已占用", "申请调换", `预约人：${assignee.username}`]
-			}
-		})
-	
+	const rowSpan = Math.round((spare.end_time - spare.begin_time) / 30);
+	let color, tdText, popupButton, popupDescription
+	if (spare.assignee === undefined) {
+		color = "blue"
+		tdText = "空闲"
+		popupButton = <div class="ui button">预约</div>
+		popupDescription = ""
+	} else {
+		if (props.userId && spare.assignee.id == props.userId) {
+			color = "green"
+			tdText = "已预约"
+			popupButton = <div class="ui button">取消预约</div>
+			popupDescription = ""
+		} else {
+			color = "yellow"
+			tdText = "已占用"
+			popupButton = <></>
+			popupDescription = `预约人：${spare.assignee.username}`
+		}
+	}
+
 	onMount(() => {
 		if (cellRef && popupRef) {$(cellRef).popup({
 			popup: $(popupRef),
@@ -58,29 +82,34 @@ const SpareTd = (props: {spare: Spare, userId: number}) => {
 
 	return <>
 		<td ref={cellRef} class={color} style={tdStyle} rowspan={rowSpan}>
-			{spare.room}
-			<br />
 			{tdText}
 		</td>
 		<div ref={popupRef} class="ui popup transition hidden">
 			<div class="ui header">{popupDescription}</div>
-			<div class="ui button">{popupText}</div>
+			{popupButton}
 		</div>
 	</>
 }
 
-const Calendar = (props: { user: User, spares: Spares }) => {
+const Calendar = (props: { user: User, spares: Spares, room: String }) => {
 	const monday = parseISO(`${year}-W${week()}-1`)
 	const weekDates = Array.from({ length: 7 }, (_, i) => addDays(monday, i))
 
+	const spares = props.spares.filter(spare => spare.room == props.room)
+		.map(spare => ({
+			...spare,
+			begin_time: parseISODurationToMinutes(spare.begin_time),
+			end_time: parseISODurationToMinutes(spare.end_time),
+		}))
+
 	const findMatched = (day: number, begin_time: number) => {
-		return props.spares.find(spare =>
-			spare.stamp == day && begin_time == parseISODurationToMinutes(spare.begin_time)
+		return spares.find(spare =>
+			spare.stamp == day && spare.begin_time == begin_time
 		)
 	}
 	const isCovered = (day: number, begin_time: number) => {
-		return props.spares.some(spare =>
-			spare.stamp == day && begin_time > parseISODurationToMinutes(spare.begin_time) && begin_time < parseISODurationToMinutes(spare.end_time)
+		return spares.some(spare =>
+			spare.stamp == day && spare.begin_time < begin_time && spare.end_time > begin_time
 		)
 	}
 
@@ -211,7 +240,11 @@ const Main = (props: { user: User }) => {
 		match(spares())
 			.with(undefined, () => <Loader />)
 			.otherwise(spares => <>
-				<Calendar user={props.user} spares={spares} />
+				<MenuViewer {...["205", "208"].map(room => ({
+					name: room,
+					component: () => <Calendar user={props.user} spares={spares} room={room} />,
+				}))}></MenuViewer>
+				{/* <Calendar user={props.user} spares={spares} room={"205"} /> */}
 				<MySpares spares={spares.filter(spare => spare.assignee && spare.assignee.id === props.user.id)} />
 				<AvailableSpares spares={spares.filter(spare => spare.assignee === undefined)} />
 			</>)
