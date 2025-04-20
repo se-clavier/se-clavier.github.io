@@ -22,16 +22,17 @@ const tdStyle = {
 }
 
 function parseISODurationToMinutes(duration: string): number {
-	const regex = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/
-	const match = duration.match(regex)
+	const regex = /^P(?:([\d.]+)Y)?(?:([\d.]+)M)?(?:([\d.]+)W)?(?:([\d.]+)D)?(?:T(?:([\d.]+)H)?(?:([\d.]+)M)?(?:([\d.]+)S)?)?$/
 
+	const match = duration.match(regex)
 	if (!match) throw new Error("Invalid ISO 8601 duration")
 
-	const [, h, m,] = match
-	const hours = parseInt(h || "0", 10)
-	const minutes = parseInt(m || "0", 10)
-
-	return hours * 60 + minutes
+	const [, , , , d, h, m,] = match
+	return (
+		(parseFloat(d) || 0) * 24 * 60 +
+		(parseFloat(h) || 0) * 60 +
+		(parseFloat(m) || 0)
+	)
 }
 
 type SpareDisplay = {
@@ -105,63 +106,64 @@ const Calendar = (props: { user: User, spares: Spares, room: string }) => {
 
 	const findMatched = (day: number, begin_time: number) => {
 		return spares.find(spare =>
-			spare.stamp == day && spare.begin_time == begin_time
+			spare.begin_time == day * 24 * 60 + begin_time
 		)
 	}
 	const isCovered = (day: number, begin_time: number) => {
 		return spares.some(spare =>
-			spare.stamp == day && spare.begin_time < begin_time && spare.end_time > begin_time
+			spare.begin_time < day * 24 * 60 + begin_time &&
+			spare.end_time > day * 24 * 60 + begin_time
 		)
 	}
 
 	return (
 		<div class="ui segment">
-			<p> TODO[Early]: </p>
-			<p> Implement Calendar for user {props.user.username} </p>
-			<table class="ui small celled center aligned unstackable table">
-				<thead>
-					<tr>
-						<th>时间</th>
-						<For each={weekDates}>
-							{(date, i) => (
-								<th>
-									{weekday_labels[i()]}
-									<br />
-									{format(date, "M-d")}
-								</th>
+			<div style="overflow-x: auto;">
+				<table class="ui small celled center aligned unstackable table">
+					<thead>
+						<tr>
+							<th>时间</th>
+							<For each={weekDates}>
+								{(date, i) => (
+									<th>
+										{weekday_labels[i()]}
+										<br />
+										{format(date, "M-d")}
+									</th>
+								)}
+							</For>
+						</tr>
+					</thead>
+					<tbody>
+						<For each={blocks}>
+							{(block) => (
+								<tr>
+									<td style={tdStyle}>
+										<Show when={block % 60 === 0}>
+											{Math.round(block / 60)}:00
+										</Show>
+									</td>
+									<For each={weekDates}>
+										{(date, i) => (
+											<Show when={!isCovered(i(), block)}>
+												{match(findMatched(i(), block))
+													.with(undefined, () => <td style={tdStyle}></td>)
+													.otherwise(spare => <SpareTd spare={spare} style={
+														match(spare.assignee)
+															.with(undefined, () => "Available" as SpareTdStyle)
+															.with({ id: props.user.id }, () => "Mine" as SpareTdStyle)
+															.otherwise(() => "Taken" as SpareTdStyle)
+													} />)
+												}
+											</Show>
+										)}
+									</For>
+								</tr>
 							)}
 						</For>
-					</tr>
-				</thead>
-				<tbody>
-					<For each={blocks}>
-						{(block) => (
-							<tr>
-								<td style={tdStyle}>
-									<Show when={block % 60 === 0}>
-										{Math.round(block / 60)}:00
-									</Show>
-								</td>
-								<For each={weekDates}>
-									{(date, i) => (
-										<Show when={!isCovered(i() + 1, block)}>
-											{match(findMatched(i() + 1, block))
-												.with(undefined, () => <td style={tdStyle}></td>)
-												.otherwise(spare => <SpareTd spare={spare} style={
-													match(spare.assignee)
-														.with(undefined, () => "Available" as SpareTdStyle)
-														.with({ id: props.user.id }, () => "Mine" as SpareTdStyle)
-														.otherwise(() => "Taken" as SpareTdStyle)
-												} />)
-											}
-										</Show>
-									)}
-								</For>
-							</tr>
-						)}
-					</For>
-				</tbody>
-			</table>
+					</tbody>
+				</table>
+			</div>
 		</div>
 	)
 }
