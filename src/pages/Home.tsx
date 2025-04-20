@@ -6,11 +6,11 @@ import { Loader } from "../lib/common"
 import { addDays, format, getISOWeek, getISOWeekYear, parseISO } from "date-fns"
 import { MenuViewer } from "../lib/MenuViewer"
 
-const year = getISOWeekYear(Date.now());
+const year = getISOWeekYear(Date.now())
 const [week, setWeek] = createSignal(getISOWeek(Date.now()))
-const weekDayLabels = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
+const weekDayLabels = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
 const blocks = ((begin_time, end_time) => {
-	let blocks = []
+	const blocks = []
 	for (let i = begin_time; i < end_time; i += 30) {
 		blocks.push(i)
 	}
@@ -22,16 +22,16 @@ const tdStyle = {
 }
 
 function parseISODurationToMinutes(duration: string): number {
-	const regex = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/;
-	const match = duration.match(regex);
+	const regex = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/
+	const match = duration.match(regex)
 
-	if (!match) throw new Error("Invalid ISO 8601 duration");
+	if (!match) throw new Error("Invalid ISO 8601 duration")
 
-	const [, h, m, ] = match;
-	const hours = parseInt(h || "0", 10);
-	const minutes = parseInt(m || "0", 10);
+	const [, h, m, ] = match
+	const hours = parseInt(h || "0", 10)
+	const minutes = parseInt(m || "0", 10)
 
-	return hours * 60 + minutes;
+	return hours * 60 + minutes
 }
 
 type ParsedSpare = {
@@ -52,7 +52,7 @@ const SpareTd = (props: {spare: ParsedSpare, userId?: number}) => {
 	let popupRef: HTMLDivElement | undefined
 	const spare = props.spare
 
-	const rowSpan = Math.round((spare.end_time - spare.begin_time) / 30);
+	const rowSpan = Math.round((spare.end_time - spare.begin_time) / 30)
 	let color, tdText, popupButton, popupDescription
 	if (spare.assignee === undefined) {
 		color = "blue"
@@ -91,7 +91,7 @@ const SpareTd = (props: {spare: ParsedSpare, userId?: number}) => {
 	</>
 }
 
-const Calendar = (props: { user: User, spares: Spares, room: String }) => {
+const Calendar = (props: { user: User, spares: Spares, room: string }) => {
 	const monday = parseISO(`${year}-W${week()}-1`)
 	const weekDates = Array.from({ length: 7 }, (_, i) => addDays(monday, i))
 
