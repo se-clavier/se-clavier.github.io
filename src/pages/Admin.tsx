@@ -1,6 +1,6 @@
 import { Component, createMemo, createSignal } from "solid-js"
 import { MenuViewer } from "../lib/MenuViewer"
-import { ErrorMessage, FormField } from "../lib/common"
+import { Message, FormField, MessageProps } from "../lib/common"
 import { ColumnDef, createSolidTable, flexRender, getCoreRowModel } from "@tanstack/solid-table"
 import { api, Room, Spare, SpareInitRequest } from "../api"
 import { WeekSelect } from "../lib/WeekSelect"
@@ -34,7 +34,7 @@ const SpareManage: Component = () => {
 	const [begin_week, set_begin_week] = createSignal(current_week)
 	const [end_week, set_end_week] = createSignal(current_week)
 	const [spares_input, set_spares_input] = createSignal<SpareInput[]>([])
-	const [error, set_error] = createSignal<string>()
+	const message = new Signal<MessageProps>({ type: null })
 	type SpareInput = {
 		room: Signal<Room>;
 		begin_time: Signal<string>; // eg. 8:00, 16:30
@@ -86,7 +86,7 @@ const SpareManage: Component = () => {
 				.with("Success", () => alert("提交成功"))
 				.exhaustive()
 		} catch (error) {
-			set_error("提交失败：" + error)
+			message.set({ type: "error", message: "" + error })
 		}
 	}
 	
@@ -237,7 +237,7 @@ const SpareManage: Component = () => {
 				base_week={begin_week()} />
 			<div class="ui segment" style={{ "text-align": "center" }}>
 				<button class="ui button" onClick={submit}> 提交 </button>
-				<ErrorMessage message={error()} />
+				{Message(message.get())}
 			</div>
 		</>
 	)
