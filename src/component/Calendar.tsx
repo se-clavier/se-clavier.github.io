@@ -3,7 +3,7 @@ import { For, Show } from "solid-js"
 import { MenuViewer } from "../lib/MenuViewer"
 import { match } from "ts-pattern"
 import { addDays, format, startOfWeek } from "date-fns"
-import { parseISODurationToMinutes } from "./util"
+import { parseISODurationToMinutes } from "../util"
 
 const tdStyle = {
 	height: "20px",

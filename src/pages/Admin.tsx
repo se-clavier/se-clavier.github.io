@@ -6,7 +6,7 @@ import { api, Room, Spare, SpareInitRequest } from "../api"
 import { WeekSelect } from "../lib/WeekSelect"
 import { addDays, addWeeks, format, formatISODuration, intervalToDuration, parse } from "date-fns"
 import { match } from "ts-pattern"
-import { Signal } from "../db"
+import { Signal } from "../util"
 
 const UserManage: Component = () => {
 	// TODO[Early]: Finish this component
