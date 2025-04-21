@@ -21,6 +21,7 @@
 	},
 	"dependencies": {
 		"@rollup/plugin-inject": "^5.0.5",
+		"@tanstack/solid-table": "^8.21.3",
 		"@types/semantic-ui": "^2.2.9",
 		"api": "file:api",
 		"date-fns": "^4.1.0",
