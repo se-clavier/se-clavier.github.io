@@ -104,7 +104,7 @@ const SpareManage: Component = () => {
 		}])
 	}
 
-	const validate_time = (time: string) => /^([0-9]|[1][0-9]|2[0-3]):[0-5][0-9]$/.test(time)
+	const validate_time = (time: string) => /^([0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/.test(time)
 	const validate_weekday = (str: string) => /^([1-7],)*[1-7]$/.test(str)
 
 	// part: table
