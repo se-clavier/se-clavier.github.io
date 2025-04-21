@@ -10,7 +10,7 @@ const ResetPassword: Component = () => {
 
 	const submit = async () => {
 		const new_password = String($("input[name='new_password']").val())
-		const comfirm_password = String($("input[name='comfirm_password']").val())
+		const comfirm_password = String($("input[name='confirm_password']").val())
 
 		if (new_password != comfirm_password) {
 			message.set({ type: "error", message: "两次输入的密码不一致" })
@@ -30,7 +30,7 @@ const ResetPassword: Component = () => {
 		<div class="ui form">
 			<h4 class="ui dividing header"> 修改密码 </h4>
 			<FormInput label="新密码" name="new_password" type="password" />
-			<FormInput label="确认密码" name="comfirm_password" type="password" />
+			<FormInput label="确认密码" name="confirm_password" type="password" />
 			<button class="ui button" classList={{ loading: loading.get() }} onclick={submit}> 提交 </button>
 			{/* why <Message {...message.get()} /> does not work? */}
 			{Message(message.get())}
