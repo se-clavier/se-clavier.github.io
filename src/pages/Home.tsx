@@ -41,23 +41,33 @@ const SpareEmpty = () => (
 	</div>
 )
 
-const MySpares = (props: { spares: Spares }) => (
+const MySpares = (props: { spares: Spares, refresh: () => void, }) => (
 	<div class="ui segment">
 		<h4 class="ui dividing header"> 我的琴房 </h4>
 		<Show when={props.spares.length > 0} fallback={<SpareEmpty />}>
 			<div class="ui two cards">
-				{props.spares.map(spare => <SpareItem spare={spare} button={<div class="ui negative button">取消预约</div>} />)}
+				{props.spares.map(spare => <SpareItem spare={spare} button={
+					<div class="ui negative button" onClick={async () => {
+						await api.spare_return({ id: spare.id })
+						props.refresh()
+					}}> 取消预约 </div>
+				} />)}
 			</div>
 		</Show>
 	</div>
 )
 
-const AvailableSpares = (props: { spares: Spares }) => (
+const AvailableSpares = (props: { spares: Spares, refresh: () => void }) => (
 	<div class="ui segment">
 		<h4 class="ui dividing header"> 空闲琴房 </h4>
 		<Show when={props.spares.length > 0} fallback={<SpareEmpty />}>
 			<div class="ui two cards">
-				{props.spares.map(spare => <SpareItem spare={spare} button={<div class="ui positive button">预约</div>} />)}
+				{props.spares.map(spare => <SpareItem spare={spare} button={
+					<div class="ui positive button" onClick={async () => {
+						await api.spare_take({ id: spare.id })
+						props.refresh()
+					}}> 预约 </div>
+				} />)}
 			</div>
 		</Show>
 	</div>
@@ -68,7 +78,7 @@ const Main = (props: { user: User }) => {
 	// (use date-fns, getISOWeek)
 
 	const [week, set_week] = createSignal(new Date())
-	const [data] = createResource(week, async () => {
+	const [data, { refetch }] = createResource(week, async () => {
 		return await api.spare_list({
 			type: "Week",
 			content: format(week(), "RRRR-'W'ww"),
@@ -79,22 +89,17 @@ const Main = (props: { user: User }) => {
 		<div class="ui" style={{ "text-align": "center" }}>
 			<WeekSelect get={week} set={set_week} />
 		</div>
-		{(() => {
-			if (data.error) {
-				return <ErrorMessage message={data.error.toString()} />
-			}
-			else if (data.loading || data() === undefined) {
-				return <Loader />
-			}
-			else {
-				const { spares, rooms } = data()!
-				return <>
-					<Calendar spares={spares} rooms={rooms} base_week={week()} focus_user={props.user} />
-					<MySpares spares={spares.filter(spare => spare.assignee?.id === props.user.id)} />
-					<AvailableSpares spares={spares.filter(spare => spare.assignee === null)} />
-				</>
-			}
-		})()}
+		{
+			match(data.error)
+				.with(undefined, () => match(data())
+					.with(undefined, () => <Loader />)
+					.otherwise(({ spares, rooms }) => <>
+						<Calendar spares={spares} rooms={rooms} base_week={week()} focus_user={props.user} />
+						<MySpares spares={spares.filter(spare => spare.assignee?.id === props.user.id)} refresh={refetch} />
+						<AvailableSpares spares={spares.filter(spare => spare.assignee === null)} refresh={refetch} />
+					</>))
+				.otherwise(error => <ErrorMessage message={error.message} />)
+		}
 	</>
 }
 

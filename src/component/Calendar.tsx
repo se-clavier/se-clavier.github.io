@@ -124,14 +124,15 @@ const CalendarTable = (props: CalendarTableProps) => {
 								<For each={weekDates}>
 									{(date, i) => (
 										<Show when={!isCovered(i(), block)}>
-											{match(findMatched(i(), block))
-												.with(undefined, () => <td style={tdStyle}></td>)
-												.otherwise(spare => <SpareTd spare={spare} style={
-													match(spare.assignee)
-														.with(null, () => "Available" as SpareTdStyle)
-														.with({ id: props.user?.id }, () => "Mine" as SpareTdStyle)
-														.otherwise(() => "Taken" as SpareTdStyle)
-												} />)
+											{
+												match(findMatched(i(), block))
+													.with(undefined, () => <td style={tdStyle}></td>)
+													.otherwise(spare => <SpareTd spare={spare} style={
+														match(spare.assignee)
+															.with(null, () => "Available" as SpareTdStyle)
+															.with({ id: props.user?.id }, () => "Mine" as SpareTdStyle)
+															.otherwise(() => "Taken" as SpareTdStyle)
+													} />)
 											}
 										</Show>
 									)}
