@@ -57,7 +57,7 @@ const SpareManage: Component = () => {
 				week: "filled by backend",
 				begin_time: parse_time(parseInt(day) - 1, spare.begin_time.get()),
 				end_time: parse_time(parseInt(day) - 1, spare.end_time.get()),
-				assignee: undefined,
+				assignee: null,
 			} as Spare)))
 	})
 	const rooms = createMemo(() => (

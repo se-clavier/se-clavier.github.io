@@ -38,10 +38,10 @@ type SpareDisplay = {
 	begin_time: number
 	end_time: number
 	room: string
-	assignee?: {
+	assignee: {
 		id: number
 		username: string
-	}
+	} | null
 }
 
 type SpareTdStyle = "Mine" | "Taken" | "Available"
@@ -128,7 +128,7 @@ const CalendarTable = (props: CalendarTableProps) => {
 												.with(undefined, () => <td style={tdStyle}></td>)
 												.otherwise(spare => <SpareTd spare={spare} style={
 													match(spare.assignee)
-														.with(undefined, () => "Available" as SpareTdStyle)
+														.with(null, () => "Available" as SpareTdStyle)
 														.with({ id: props.user?.id }, () => "Mine" as SpareTdStyle)
 														.otherwise(() => "Taken" as SpareTdStyle)
 												} />)

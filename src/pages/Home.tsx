@@ -69,7 +69,7 @@ const Main = (props: { user: User }) => {
 
 	const [week, set_week] = createSignal(new Date())
 	const [data] = createResource(week, async () => {
-		return api.spare_list({
+		return await api.spare_list({
 			type: "Week",
 			content: format(week(), "RRRR-'W'ww"),
 		})
@@ -91,7 +91,7 @@ const Main = (props: { user: User }) => {
 				return <>
 					<Calendar spares={spares} rooms={rooms} base_week={week()} focus_user={props.user} />
 					<MySpares spares={spares.filter(spare => spare.assignee?.id === props.user.id)} />
-					<AvailableSpares spares={spares.filter(spare => spare.assignee === undefined)} />
+					<AvailableSpares spares={spares.filter(spare => spare.assignee === null)} />
 				</>
 			}
 		})()}
