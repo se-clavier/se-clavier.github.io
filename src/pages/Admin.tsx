@@ -136,7 +136,7 @@ const SpareManage: Component = () => {
 			accessorKey: "end_time",
 			cell: ({ row, getValue }) => (
 				<div class="ui input"
-					classList={{ error: !validate_time(spares_input()[row.index].begin_time.get()) }}>
+					classList={{ error: !validate_time(spares_input()[row.index].end_time.get()) }}>
 					<input type="text"
 						placeholder="18:30"
 						value={(getValue() as Signal<string>).get() as string}
