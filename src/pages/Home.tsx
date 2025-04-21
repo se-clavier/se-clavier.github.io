@@ -1,16 +1,11 @@
-import { Component, createResource, Show } from "solid-js"
+import { Component, createResource, createSignal, Show } from "solid-js"
 import { db } from "../db"
 import { match } from "ts-pattern"
 import { Spare, Spares, User } from "../api"
 import { Loader } from "../lib/common"
+import { Calendar } from "../component/Calendar"
 
-const Calendar = (props: { user: User, spares: Spares }) => (
-	// TODO[Early]: Implement this component
-	<div class="ui segment">
-		<p> TODO[Early]: </p>
-		<p> Implement Calendar for user {props.user.username} </p>
-	</div>
-)
+const [week] = createSignal(new Date())
 
 const SpareItem = (props: { spare: Spare }) => (
 	// TODO[Early]: Draw this component
@@ -70,9 +65,9 @@ const demo_spares: Spares = [
 		id: 10002,
 		stamp: 1,
 		week: "2025-W01",
-		// ISO 8601 time diff format, begin_time 8hrs, end_time 9hrs30mins
-		begin_time: "PT08H00M00S",
-		end_time: "PT09H30M00S",
+		// ISO 8601 time diff format, begin_time 1days8hrs, end_time 9hrs30mins
+		begin_time: "P1DT08H00M00S",
+		end_time: "P1DT09H30M00S",
 		room: "208",
 		assignee: undefined,
 	},
@@ -82,19 +77,19 @@ const Main = (props: { user: User }) => {
 	// TODO: Add Week Selector
 	// (use date-fns, getISOWeek)
 
-	const [spares] = createResource<Spares>(async () => {
+	const [data] = createResource(async () => {
 		// return await api.spare_list({ ... })
 		await new Promise(resolve => setTimeout(resolve, 1000))
-		return demo_spares
+		return { spares: demo_spares, rooms: ["205", "208"] }
 	})
 
 	return <> {
-		match(spares())
+		match(data())
 			.with(undefined, () => <Loader />)
-			.otherwise(spares => <>
-				<Calendar user={props.user} spares={spares} />
-				<MySpares spares={spares.filter(spare => spare.assignee && spare.assignee.id === props.user.id)} />
-				<AvailableSpares spares={spares.filter(spare => spare.assignee === undefined)} />
+			.otherwise(data => <>
+				<Calendar spares={data.spares} rooms={data.rooms} base_week={week()} focus_user={props.user} />
+				<MySpares spares={data.spares.filter(spare => spare.assignee?.id === props.user.id)} />
+				<AvailableSpares spares={data.spares.filter(spare => spare.assignee === undefined)} />
 			</>)
 	}
 	</>
