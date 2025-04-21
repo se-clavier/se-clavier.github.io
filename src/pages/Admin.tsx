@@ -90,8 +90,12 @@ const SpareManage: Component = () => {
 			set_error("提交失败：" + error)
 		}
 	}
+	
+	const delete_row = (index: number) => {
+		set_spares_input(spares => spares.filter((_, i) => i !== index))
+	}
 
-	const add_row = () => {
+	const append_row = () => {
 		set_spares_input([...spares_input(), {
 			room: new Signal(""),
 			begin_time: new Signal(""),
@@ -161,7 +165,7 @@ const SpareManage: Component = () => {
 			header: "操作",
 			cell: ({ row }) => (
 				<button class="ui red icon button"
-					onClick={() => set_spares_input(spares => spares.filter((_, index) => index !== row.index))} >
+					onClick={() => delete_row(row.index)} >
 					<i class="close icon" />
 				</button>
 			),
@@ -220,7 +224,7 @@ const SpareManage: Component = () => {
 					<tfoot>
 						<tr>
 							<td colspan={columns.length} style={{ "text-align": "center" }}>
-								<button class="ui green icon button" onClick={add_row}>
+								<button class="ui green icon button" onClick={append_row}>
 									<i class="plus icon" />
 								</button>
 							</td>
