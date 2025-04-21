@@ -1,5 +1,5 @@
 import { Rooms, Spares, User } from "../api"
-import { For, Show } from "solid-js"
+import { For, JSX, Show } from "solid-js"
 import { MenuViewer } from "../lib/MenuViewer"
 import { match } from "ts-pattern"
 import { addDays, format, startOfWeek } from "date-fns"
@@ -8,6 +8,18 @@ import { parseISODurationToMinutes } from "../util"
 const tdStyle = {
 	height: "20px",
 	padding: "0",
+}
+const stickyThStyle: JSX.CSSProperties = {
+	position: "sticky",
+	left: "0",
+	"z-index": "1",
+	"box-shadow": "1px 0 0 #ccc",
+	"border-left": "1px solid #ccc",
+	...tdStyle
+}
+const stickyTdStyle = {
+	background: "white",
+	...stickyThStyle
 }
 
 const weekday_labels = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
@@ -85,13 +97,13 @@ const CalendarTable = (props: CalendarTableProps) => {
 
 	return (
 		<div style="overflow-x: auto;">
-			<table class="ui small celled center aligned unstackable table">
+			<table class="ui fixed small celled center aligned unstackable equal width table" style="min-width: 500px; border-left: none;">
 				<thead>
 					<tr>
-						<th>时间</th>
+						<th style={stickyThStyle}>时间</th>
 						<For each={weekDates}>
 							{(date, i) => (
-								<th>
+								<th style={tdStyle}>
 									{weekday_labels[i()]}
 									<br />
 									{format(date, "M-d")}
@@ -104,7 +116,7 @@ const CalendarTable = (props: CalendarTableProps) => {
 					<For each={blocks}>
 						{(block) => (
 							<tr>
-								<td style={tdStyle}>
+								<td style={stickyTdStyle}>
 									<Show when={block % 60 === 0}>
 										{Math.round(block / 60)}:00
 									</Show>
