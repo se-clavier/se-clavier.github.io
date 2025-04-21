@@ -47,10 +47,10 @@ const MySpares = (props: { spares: Spares, refresh: () => void, }) => (
 		<Show when={props.spares.length > 0} fallback={<SpareEmpty />}>
 			<div class="ui two cards">
 				{props.spares.map(spare => <SpareItem spare={spare} button={
-					<div class="ui negative button" onClick={async () => {
+					<button class="ui negative button" onClick={async () => {
 						await api.spare_return({ id: spare.id })
 						props.refresh()
-					}}> 取消预约 </div>
+					}}> 取消预约 </button>
 				} />)}
 			</div>
 		</Show>
@@ -63,10 +63,10 @@ const AvailableSpares = (props: { spares: Spares, refresh: () => void }) => (
 		<Show when={props.spares.length > 0} fallback={<SpareEmpty />}>
 			<div class="ui two cards">
 				{props.spares.map(spare => <SpareItem spare={spare} button={
-					<div class="ui positive button" onClick={async () => {
+					<button class="ui positive button" onClick={async () => {
 						await api.spare_take({ id: spare.id })
 						props.refresh()
-					}}> 预约 </div>
+					}}> 预约 </button>
 				} />)}
 			</div>
 		</Show>
