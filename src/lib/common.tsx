@@ -1,22 +1,14 @@
-import { Show, splitProps } from "solid-js"
-import { JSX } from "solid-js/jsx-runtime"
+import { JSX, splitProps } from "solid-js"
 
-export const FormField = (props: {
+export const FormInput = (props: {
 	label: string,
-	name?: string,
-	type?: "text" | "password",
-	placeholder?: string,
-}) => {
-	const label = props.label
-	const name = props.name ?? props.label
-	const type = props.type ?? "text"
-	const placeholder = props.placeholder ?? props.label
-
+} & JSX.InputHTMLAttributes<HTMLInputElement>) => {
+	const [local, rest] = splitProps(props, ["label"])
 	return (
 		<div class="field">
 			<label>
-				{label}
-				<input type={type} name={name} placeholder={placeholder} />
+				{local.label}
+				<input {...rest} />
 			</label>
 		</div>
 	)
@@ -47,15 +39,23 @@ export const LinkButton = (props: {
 	)
 }
 
-export const ErrorMessage = (props: {
-	message: string | null | undefined,
-} & JSX.HTMLAttributes<HTMLDivElement>) => {
-	const [local, rest] = splitProps(props, ["message"])
-	return (
-		<Show when={local.message}>
-			<div class="ui error message" {...rest}>
-				{local.message}
+export type MessageProps = {
+	type: null,
+} | {
+	type: "info" | "error" | "success" | "warning",
+	message: string,
+}
+
+export const Message = (props: MessageProps & JSX.HTMLAttributes<HTMLDivElement>) => {
+	if (props.type === null) {
+		return <> </>
+	}
+	else {
+		const [local, rest] = splitProps(props, ["type", "message"])
+		return (
+			<div class={`ui message visible ${props.type}`} {...rest}>
+				<p> {local.message} </p>
 			</div>
-		</Show>
-	)
+		)
+	}
 }

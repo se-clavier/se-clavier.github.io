@@ -2,7 +2,7 @@ import { Component, createResource, createSignal, JSXElement, Show } from "solid
 import { db } from "../db"
 import { match } from "ts-pattern"
 import { api, Spare, Spares, User } from "../api"
-import { ErrorMessage, Loader } from "../lib/common"
+import { Message, Loader } from "../lib/common"
 import { Calendar } from "../component/Calendar"
 import { format, formatDate } from "date-fns"
 import { zhCN } from "date-fns/locale"
@@ -95,7 +95,7 @@ const Main = (props: { user: User }) => {
 						<MySpares spares={spares.filter(spare => spare.assignee?.id === props.user.id)} refresh={refetch} />
 						<AvailableSpares spares={spares.filter(spare => spare.assignee === null)} refresh={refetch} />
 					</>))
-				.otherwise(error => <ErrorMessage message={error.message} />)
+				.otherwise(error => <Message type="error" message={"" + error} />)
 		}
 	</>
 }
