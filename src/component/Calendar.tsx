@@ -3,7 +3,7 @@ import { For, JSX, Show } from "solid-js"
 import { MenuViewer } from "../lib/MenuViewer"
 import { match } from "ts-pattern"
 import { addDays, format, startOfWeek } from "date-fns"
-import { parseISODurationToMinutes } from "../util"
+import { durationToMinute, parseISODuration } from "../util"
 
 const tdStyle = {
 	height: "20px",
@@ -79,8 +79,8 @@ const CalendarTable = (props: CalendarTableProps) => {
 
 	const spares = props.spares.map(spare => ({
 		...spare,
-		begin_time: parseISODurationToMinutes(spare.begin_time),
-		end_time: parseISODurationToMinutes(spare.end_time),
+		begin_time: durationToMinute(parseISODuration(spare.begin_time)),
+		end_time: durationToMinute(parseISODuration(spare.end_time)),
 	}))
 
 	const findMatched = (day: number, begin_time: number) => {
