@@ -3,7 +3,7 @@ import { For, Show } from "solid-js"
 import { MenuViewer } from "../lib/MenuViewer"
 import { match } from "ts-pattern"
 import { addDays, format, startOfWeek } from "date-fns"
-import { parseISODurationToMinutes } from "./util"
+import { parseISODurationToMinutes } from "../util"
 
 const tdStyle = {
 	height: "20px",
@@ -141,11 +141,13 @@ export type CalendarProps = {
 }
 
 export const Calendar = (props: CalendarProps) => (
-	<MenuViewer {...props.rooms.map(room => ({
-		name: room,
-		component: () => <CalendarTable
-			spares={props.spares.filter(spare => spare.room == room)}
-			base_week={props.base_week} 
-			user={props.focus_user}/>,
-	}))} />
+	<Show when={props.rooms.length > 0}>
+		<MenuViewer {...props.rooms.map(room => ({
+			name: room,
+			component: () => <CalendarTable
+				spares={props.spares.filter(spare => spare.room == room)}
+				base_week={props.base_week}
+				user={props.focus_user} />,
+		}))} />
+	</Show>
 )

@@ -1,4 +1,4 @@
-import { splitProps } from "solid-js"
+import { Show, splitProps } from "solid-js"
 import { JSX } from "solid-js/jsx-runtime"
 
 export const FormField = (props: {
@@ -44,5 +44,18 @@ export const LinkButton = (props: {
 			}}>
 			{local.label}
 		</a>
+	)
+}
+
+export const ErrorMessage = (props: {
+	message: string | null | undefined,
+} & JSX.HTMLAttributes<HTMLDivElement>) => {
+	const [local, rest] = splitProps(props, ["message"])
+	return (
+		<Show when={local.message}>
+			<div class="ui error message" {...rest}>
+				{local.message}
+			</div>
+		</Show>
 	)
 }

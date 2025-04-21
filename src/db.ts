@@ -2,14 +2,7 @@ import { Auth, User } from "api"
 import { Accessor, createEffect, createSignal, Setter } from "solid-js"
 import { match } from "ts-pattern"
 import { api } from "./api"
-
-export class Signal<T> {
-	get: Accessor<T>;
-	set: Setter<T>;
-	constructor(init: T) {
-		[this.get, this.set] = createSignal<T>(init)
-	}
-}
+import { Signal } from "./util"
 
 export class PersistentSignal<T> {
 	readonly get: Accessor<T | null>

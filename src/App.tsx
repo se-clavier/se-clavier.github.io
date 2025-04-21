@@ -7,7 +7,7 @@ import { Home } from "./pages/Home"
 
 import "fomantic-ui-css/semantic.min.css"
 import "fomantic-ui-css/semantic.min.js"
-import { Signal } from "./db"
+import { Signal } from "./util"
 
 
 export const mainApp = new Signal<Component>(Home)
