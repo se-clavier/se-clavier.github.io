@@ -1,36 +1,55 @@
-import { Component, createResource, createSignal, Show } from "solid-js"
+import { Component, createResource, createSignal, JSXElement, Show } from "solid-js"
 import { db } from "../db"
 import { match } from "ts-pattern"
 import { Spare, Spares, User } from "../api"
 import { Loader } from "../lib/common"
 import { Calendar } from "../component/Calendar"
+import { addMinutes, format, formatDate, parseISO } from "date-fns"
+import { zhCN } from "date-fns/locale"
+import { parseISODurationToMinutes } from "../component/util"
 
 const [week] = createSignal(new Date())
 
-const SpareItem = (props: { spare: Spare }) => (
-	// TODO[Early]: Draw this component
-	<div class="ui fluid card">
-		<div class="content">
-			spare of {JSON.stringify(props.spare)}
+const SpareItem = (props: { spare: Spare, button?: JSXElement }) => {
+	const monday = parseISO(`${props.spare.week}-1`)
+	const begin_time = addMinutes(monday, parseISODurationToMinutes(props.spare.begin_time))
+	const end_time = addMinutes(monday, parseISODurationToMinutes(props.spare.end_time))
+	return (
+		<div class="ui card">
+			<div class="content">
+				<div class="header">{props.spare.room}</div>
+			</div>
+			<div class="content">
+				<div class="meta">{formatDate(begin_time, "LLLdo EEEE", { locale: zhCN })}</div>
+				<div class="meta">
+					{format(begin_time, "H:mm", { locale: zhCN })}
+					-
+					{format(end_time, "H:mm", { locale: zhCN })}
+				</div>
+			</div>
+			<Show when={props.button != undefined}>
+				{props.button}
+			</Show>
 		</div>
-	</div>
-)
+	)
+}
 
 const SpareEmpty = () => (
-	// TODO[Early]: Draw a better empty state
-	<div style={{ "text-align": "center", margin: "20px" }}>
-		暂无
+	<div class="ui placeholder segment" style="min-height: 10rem;">
+		<div class="ui icon mini header">
+			<i class="ellipsis horizontal icon" />
+			暂无
+		</div>
 	</div>
 )
 
 const MySpares = (props: { spares: Spares }) => (
 	<div class="ui segment">
 		<h4 class="ui dividing header"> 我的琴房 </h4>
-		<div class="ui cards">
-			{props.spares.map(spare => <SpareItem spare={spare} />)}
-		</div>
-		<Show when={props.spares.length === 0}>
-			<SpareEmpty />
+		<Show when={props.spares.length > 0} fallback={<SpareEmpty />}>
+			<div class="ui two cards">
+				{props.spares.map(spare => <SpareItem spare={spare} button={<div class="ui negative button">取消预约</div>} />)}
+			</div>
 		</Show>
 	</div>
 )
@@ -38,11 +57,10 @@ const MySpares = (props: { spares: Spares }) => (
 const AvailableSpares = (props: { spares: Spares }) => (
 	<div class="ui segment">
 		<h4 class="ui dividing header"> 空闲琴房 </h4>
-		<div class="ui cards">
-			{props.spares.map(spare => <SpareItem spare={spare} />)}
-		</div>
-		<Show when={props.spares.length === 0}>
-			<SpareEmpty />
+		<Show when={props.spares.length > 0} fallback={<SpareEmpty />}>
+			<div class="ui two cards">
+				{props.spares.map(spare => <SpareItem spare={spare} button={<div class="ui positive button">预约</div>} />)}
+			</div>
 		</Show>
 	</div>
 )
