@@ -6,7 +6,7 @@ import { Loader } from "../lib/common"
 import { Calendar } from "../component/Calendar"
 import { addMinutes, format, formatDate, parseISO } from "date-fns"
 import { zhCN } from "date-fns/locale"
-import { parseISODurationToMinutes } from "../component/util"
+import { parseISODurationToMinutes } from "../util"
 
 const [week] = createSignal(new Date())
 
