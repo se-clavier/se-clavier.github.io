@@ -81,7 +81,6 @@ const SpareManage: Component = () => {
 				rooms: rooms(),
 				spares: spares(),
 			}
-			console.log(data)
 			const resp = await api.spare_init(data)
 			match(resp.type)
 				.with("Success", () => alert("提交成功"))
