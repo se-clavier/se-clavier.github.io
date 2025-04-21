@@ -74,9 +74,6 @@ const AvailableSpares = (props: { spares: Spares, refresh: () => void }) => (
 )
 
 const Main = (props: { user: User }) => {
-	// TODO: Add Week Selector
-	// (use date-fns, getISOWeek)
-
 	const [week, set_week] = createSignal(new Date())
 	const [data, { refetch }] = createResource(week, async () => {
 		return await api.spare_list({
