@@ -1,22 +1,14 @@
-import { splitProps } from "solid-js"
-import { JSX } from "solid-js/jsx-runtime"
+import { JSX, splitProps } from "solid-js"
 
-export const FormField = (props: {
+export const FormInput = (props: {
 	label: string,
-	name?: string,
-	type?: "text" | "password",
-	placeholder?: string,
-}) => {
-	const label = props.label
-	const name = props.name ?? props.label
-	const type = props.type ?? "text"
-	const placeholder = props.placeholder ?? props.label
-
+} & JSX.InputHTMLAttributes<HTMLInputElement>) => {
+	const [local, rest] = splitProps(props, ["label"])
 	return (
 		<div class="field">
 			<label>
-				{label}
-				<input type={type} name={name} placeholder={placeholder} />
+				{local.label}
+				<input {...rest} />
 			</label>
 		</div>
 	)

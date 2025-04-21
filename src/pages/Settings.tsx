@@ -1,5 +1,5 @@
 import { Component } from "solid-js"
-import { FormField, Message, MessageProps } from "../lib/common"
+import { FormInput, Message, MessageProps } from "../lib/common"
 import { Signal } from "../util"
 import { api } from "../api"
 import { match } from "ts-pattern"
@@ -29,8 +29,8 @@ const ResetPassword: Component = () => {
 	return (
 		<div class="ui form">
 			<h4 class="ui dividing header"> 修改密码 </h4>
-			<FormField label="新密码" name="new_password" type="password" />
-			<FormField label="确认密码" name="comfirm_password" type="password" />
+			<FormInput label="新密码" name="new_password" type="password" />
+			<FormInput label="确认密码" name="comfirm_password" type="password" />
 			<button class="ui button" classList={{ loading: loading.get() }} onclick={submit}> 提交 </button>
 			{/* why <Message {...message.get()} /> does not work? */}
 			{Message(message.get())}

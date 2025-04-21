@@ -1,7 +1,7 @@
 import { type Component, createSignal } from "solid-js"
 import { api, Auth } from "../api"
 import { match } from "ts-pattern"
-import { FormField } from "../lib/common"
+import { FormInput } from "../lib/common"
 
 const [error_message, set_error_message] = createSignal("")
 
@@ -12,8 +12,8 @@ export const LoginModal: Component = () => {
 			<div class="header"> 用户登录 </div>
 			<div class="content">
 				<form class="ui large form">
-					{FormField({ label: "用户名", name: "username", })}
-					{FormField({ label: "密码", name: "password", type: "password" })}
+					<FormInput label="用户名" name="username" />
+					<FormInput label="密码" name="password" type="password" />
 					<div class="ui button" id="login-submit"> 提交 </div>
 					<div class="ui error message" id="login-error-message">
 						<div class="header"> 登录失败 </div>

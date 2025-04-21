@@ -1,6 +1,6 @@
 import { Component, createMemo, createSignal } from "solid-js"
 import { MenuViewer } from "../lib/MenuViewer"
-import { Message, FormField, MessageProps } from "../lib/common"
+import { Message, FormInput, MessageProps } from "../lib/common"
 import { ColumnDef, createSolidTable, flexRender, getCoreRowModel } from "@tanstack/solid-table"
 import { api, Room, Spare, SpareInitRequest } from "../api"
 import { WeekSelect } from "../lib/WeekSelect"
@@ -15,8 +15,8 @@ const UserManage: Component = () => {
 		<div class="ui form">
 			<h4 class="ui dividing header"> 修改密码 </h4>
 			<div class="inline fields">
-				<FormField label="用户名" name="username" />
-				<FormField label="新密码" name="password" type="password" />
+				<FormInput label="用户名" name="username" />
+				<FormInput label="新密码" name="password" type="password" />
 				<button class="ui button" tabindex="0"> 修改 </button>
 			</div>
 		</div>
