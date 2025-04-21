@@ -4,15 +4,14 @@ import { match } from "ts-pattern"
 import { Rooms, Spare, Spares, User } from "../api"
 import { Loader } from "../lib/common"
 import { Calendar } from "../component/Calendar"
-import { addMinutes, format, formatDate, parseISO } from "date-fns"
+import { format, formatDate } from "date-fns"
 import { zhCN } from "date-fns/locale"
-import { parseISODurationToMinutes } from "../util"
 import { WeekSelect } from "../lib/WeekSelect"
+import { spare_end_time, spare_start_time } from "../util"
 
 const SpareItem = (props: { spare: Spare, button?: JSXElement }) => {
-	const monday = parseISO(`${props.spare.week}-1`)
-	const begin_time = addMinutes(monday, parseISODurationToMinutes(props.spare.begin_time))
-	const end_time = addMinutes(monday, parseISODurationToMinutes(props.spare.end_time))
+	const begin_time = spare_start_time(props.spare)
+	const end_time = spare_end_time(props.spare)
 	return (
 		<div class="ui card">
 			<div class="content">
