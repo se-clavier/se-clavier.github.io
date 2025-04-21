@@ -35,7 +35,6 @@ export function register() {
 		show_register_modal()
 
 		const set_error = (msg: string) => {
-			console.log("set error", msg)
 			set_error_message(msg)
 			$("#register-error-message").show()
 		}
@@ -50,7 +49,6 @@ export function register() {
 				$("#register-error-message").show()
 			} else {
 				const response = await api.register({ username, password })
-				console.log(response)
 				match(response)
 				  .with({ type: "FailureUsernameTaken" }, () => set_error("用户名已被注册"))
 					.with({ type: "FailureUsernameInvalid" }, () => set_error("用户名不合法"))
