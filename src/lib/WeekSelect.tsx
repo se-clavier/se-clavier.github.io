@@ -15,7 +15,7 @@ export const WeekSelect = (props: {
 	const [local, rest] = splitProps(props, ["get", "set"])
 
 	return (
-		<div class="ui buttons" tabindex="0">
+		<div class="ui buttons">
 			<button class="ui icon button" onClick={() => local.set(week => subWeeks(week, 1))}>
 				<i class="left chevron icon" />
 			</button>
