@@ -1,7 +1,7 @@
 export function parseISODurationToMinutes(duration: string): number {
 	const regex = /^P(?:([\d.]+)Y)?(?:([\d.]+)M)?(?:([\d.]+)W)?(?:([\d.]+)D)?(?:T(?:([\d.]+)H)?(?:([\d.]+)M)?(?:([\d.]+)S)?)?$/
 
-	const match = duration.match(regex)
+	const match = regex.exec(duration)
 	if (!match) throw new Error("Invalid ISO 8601 duration")
 
 	const [, , , , d, h, m,] = match
