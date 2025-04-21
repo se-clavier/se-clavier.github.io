@@ -65,7 +65,7 @@ const SpareManage: Component = () => {
 	))
 
 
-	
+
 	// part: handlers
 
 	const submit = async () => {
@@ -102,7 +102,7 @@ const SpareManage: Component = () => {
 
 	const validate_time = (time: string) => /^([0-9]|[1][0-9]|2[0-3]):[0-5][0-9]$/.test(time)
 	const validate_weekday = (str: string) => /^([1-7],)*[1-7]$/.test(str)
-	
+
 	// part: table
 
 	const columns: ColumnDef<SpareInput>[] = [
@@ -175,7 +175,7 @@ const SpareManage: Component = () => {
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 	})
-	
+
 	// part: HTML
 
 	return (
@@ -184,12 +184,16 @@ const SpareManage: Component = () => {
 			<div class="ui form">
 				<div class="inline fields">
 					<div class="ui field">
-						<label> 起始周： </label>
-						<WeekSelect get={begin_week} set={set_begin_week} classList={{ red: begin_week() > end_week() }} />
+						<label>
+							起始周：
+							<WeekSelect get={begin_week} set={set_begin_week} classList={{ red: begin_week() > end_week() }} />
+						</label>
 					</div>
 					<div class="ui field">
-						<label> 结束周： </label>
-						<WeekSelect get={end_week} set={set_end_week} classList={{ red: begin_week() > end_week() }} />
+						<label>
+							结束周：
+							<WeekSelect get={end_week} set={set_end_week} classList={{ red: begin_week() > end_week() }} />
+						</label>
 					</div>
 				</div>
 			</div>
@@ -224,7 +228,7 @@ const SpareManage: Component = () => {
 					</tfoot>
 				</table>
 			</div>
-			<Calendar 
+			<Calendar
 				spares={spares()}
 				rooms={rooms()}
 				base_week={begin_week()} />
