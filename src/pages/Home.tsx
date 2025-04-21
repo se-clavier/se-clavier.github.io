@@ -1,14 +1,13 @@
-import { Component, createResource, createSignal, JSXElement, Show } from "solid-js"
+import { Component, createEffect, createSignal, JSXElement, Show } from "solid-js"
 import { db } from "../db"
 import { match } from "ts-pattern"
-import { Spare, Spares, User } from "../api"
+import { Rooms, Spare, Spares, User } from "../api"
 import { Loader } from "../lib/common"
 import { Calendar } from "../component/Calendar"
 import { addMinutes, format, formatDate, parseISO } from "date-fns"
 import { zhCN } from "date-fns/locale"
 import { parseISODurationToMinutes } from "../util"
-
-const [week] = createSignal(new Date())
+import { WeekSelect } from "../lib/WeekSelect"
 
 const SpareItem = (props: { spare: Spare, button?: JSXElement }) => {
 	const monday = parseISO(`${props.spare.week}-1`)
@@ -65,11 +64,11 @@ const AvailableSpares = (props: { spares: Spares }) => (
 	</div>
 )
 
-const demo_spares: Spares = [
+const demo_spares = (week: Date): Spares => [
 	{
 		id: 10001,
 		stamp: 1,
-		week: "2025-W01",
+		week: format(week, "RRRR-'W'II"),
 		// ISO 8601 time diff format, begin_time 8hrs, end_time 9hrs30mins
 		begin_time: "PT08H00M00S",
 		end_time: "PT09H30M00S",
@@ -82,7 +81,7 @@ const demo_spares: Spares = [
 	{
 		id: 10002,
 		stamp: 1,
-		week: "2025-W01",
+		week: format(week, "RRRR-'W'II"),
 		// ISO 8601 time diff format, begin_time 1days8hrs, end_time 9hrs30mins
 		begin_time: "P1DT08H00M00S",
 		end_time: "P1DT09H30M00S",
@@ -95,21 +94,29 @@ const Main = (props: { user: User }) => {
 	// TODO: Add Week Selector
 	// (use date-fns, getISOWeek)
 
-	const [data] = createResource(async () => {
-		// return await api.spare_list({ ... })
-		await new Promise(resolve => setTimeout(resolve, 1000))
-		return { spares: demo_spares, rooms: ["205", "208"] }
+	const [week, set_week] = createSignal(new Date())
+	const [data, set_data] = createSignal<{ spares: Spares, rooms: Rooms }>()
+	createEffect(() => {
+		set_data(undefined)
+		const current_week = week();
+		(new Promise(resolve => setTimeout(resolve, 1000))).then(() => {
+			set_data({ spares: demo_spares(current_week), rooms: ["205", "208"] })
+		})
 	})
 
-	return <> {
-		match(data())
-			.with(undefined, () => <Loader />)
-			.otherwise(data => <>
-				<Calendar spares={data.spares} rooms={data.rooms} base_week={week()} focus_user={props.user} />
-				<MySpares spares={data.spares.filter(spare => spare.assignee?.id === props.user.id)} />
-				<AvailableSpares spares={data.spares.filter(spare => spare.assignee === undefined)} />
-			</>)
-	}
+	return <>
+		<div class="ui" style={{ "text-align": "center" }}>
+			<WeekSelect get={week} set={set_week} />
+		</div>
+		{
+			match(data())
+				.with(undefined, () => <Loader />)
+				.otherwise(data => <>
+					<Calendar spares={data.spares} rooms={data.rooms} base_week={week()} focus_user={props.user} />
+					<MySpares spares={data.spares.filter(spare => spare.assignee?.id === props.user.id)} />
+					<AvailableSpares spares={data.spares.filter(spare => spare.assignee === undefined)} />
+				</>)
+		}
 	</>
 }
 
