@@ -7,6 +7,7 @@ import { WeekSelect } from "../lib/WeekSelect"
 import { addDays, addWeeks, format, formatISODuration, intervalToDuration, parse } from "date-fns"
 import { match } from "ts-pattern"
 import { Signal } from "../util"
+import { Calendar } from "../component/Calendar"
 
 const UserManage: Component = () => {
 	// TODO[Early]: Finish this component
@@ -59,6 +60,11 @@ const SpareManage: Component = () => {
 				assignee: undefined,
 			} as Spare)))
 	})
+	const rooms = createMemo(() => (
+		[...new Set(spares_input().map(spare => spare.room.get()))]
+	))
+
+
 	
 	// part: handlers
 
@@ -72,8 +78,8 @@ const SpareManage: Component = () => {
 					}
 					return weeks
 				})(),
-				rooms: [...new Set(spares_input().map(spare => spare.room.get()))],
-				spares: spares()
+				rooms: rooms(),
+				spares: spares(),
 			}
 			console.log(data)
 			const resp = await api.spare_init(data)
@@ -218,6 +224,10 @@ const SpareManage: Component = () => {
 					</tfoot>
 				</table>
 			</div>
+			<Calendar 
+				spares={spares()}
+				rooms={rooms()}
+				base_week={begin_week()} />
 			<div class="ui segment" style={{ "text-align": "center" }}>
 				<button class="ui button" onClick={submit}> 提交 </button>
 				<ErrorMessage message={error()} />
