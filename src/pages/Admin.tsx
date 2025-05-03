@@ -1,6 +1,6 @@
 import { Component, createMemo, createResource, createSignal } from "solid-js"
 import { MenuViewer } from "../lib/MenuViewer"
-import { LinkButton, Message, MessageProps, ResourceLoader } from "../lib/common"
+import { LinkButton, ResourceLoader, SubmitField, SubmitStatus } from "../lib/common"
 import { ColumnDef, createSolidTable, flexRender, getCoreRowModel, getPaginationRowModel, Table } from "@tanstack/solid-table"
 import { api, Role, Roles, Room, Spare, SpareInitRequest, UserFulls, UserSetResponse } from "../api"
 import { WeekSelect } from "../lib/WeekSelect"
@@ -55,8 +55,6 @@ const user_list_demo: UserFulls = [
 
 const UserListManage = (users: UserFulls) => {
 	const role_list: Role["type"][] = ["admin", "user", "terminal"] // [Reminder] update this when new roles are added
-	const loading = new Signal<boolean>(false)
-	const message = new Signal<MessageProps>({ type: null })
 
 	// part: form data
 	type UserInput = {
@@ -83,34 +81,29 @@ const UserListManage = (users: UserFulls) => {
 		user.roles_updated = true
 	}
 	const submit = async () => {
-		try {
-			loading.set(true)
-			const responses: Promise<UserSetResponse>[] = []
-			users_input.forEach(user => {
-				if (user.roles_updated) {
-					responses.push(api.user_set({
-						user_id: user.id,
-						operation: {
-							type: "roles",
-							content: user.roles.entries().flatMap(([role, value]) => value.get() ? [{ type: role }] : []).toArray(),
-						},
-					}))
-				}
-				const password = user.password.get()
-				if (password !== undefined) {
-					responses.push(api.user_set({
-						user_id: user.id,
-						operation: { type: "password", content: password }
-					}))
-				}
-			})
-			await Promise.all(responses)
-			loading.set(false)
-			message.set({ type: "success", message: "修改成功" })
-		} catch (error) {
-			message.set({ type: "error", message: "" + error })
-		}
+		const responses: Promise<UserSetResponse>[] = []
+		users_input.forEach(user => {
+			if (user.roles_updated) {
+				responses.push(api.user_set({
+					user_id: user.id,
+					operation: {
+						type: "roles",
+						content: user.roles.entries().flatMap(([role, value]) => value.get() ? [{ type: role }] : []).toArray(),
+					},
+				}))
+			}
+			const password = user.password.get()
+			if (password !== undefined) {
+				responses.push(api.user_set({
+					user_id: user.id,
+					operation: { type: "password", content: password }
+				}))
+			}
+		})
+		await Promise.all(responses)
+		return "修改成功"
 	}
+	const status = new SubmitStatus(submit)
 
 	// part: table
 	// create a table of users, using tanstack table
@@ -187,10 +180,7 @@ const UserListManage = (users: UserFulls) => {
 										classList={{ disabled: !table.getCanNextPage() }}
 										onClick={() => table.nextPage()} />
 								</div>
-								<div class="ui center aligned">
-									<button class="ui button" onClick={submit}> 提交 </button>
-									{Message(message.get())}
-								</div>
+								<SubmitField {...status} />
 							</td>
 						</tr>
 					</tfoot>
@@ -219,7 +209,6 @@ const SpareManage: Component = () => {
 	const [begin_week, set_begin_week] = createSignal(current_week)
 	const [end_week, set_end_week] = createSignal(current_week)
 	const [spares_input, set_spares_input] = createSignal<SpareInput[]>([])
-	const message = new Signal<MessageProps>({ type: null })
 	type SpareInput = {
 		room: Signal<Room>;
 		begin_time: Signal<string>; // eg. 8:00, 16:30
@@ -252,26 +241,23 @@ const SpareManage: Component = () => {
 	// part: handlers
 
 	const submit = async () => {
-		try {
-			const data: SpareInitRequest = {
-				weeks: (() => {
-					const weeks: string[] = []
-					for (let i = begin_week(); i <= end_week(); i = addWeeks(i, 1)) {
-						weeks.push(format(i, "RRRR-'W'II"))
-					}
-					return weeks
-				})(),
-				rooms: rooms(),
-				spares: spares(),
-			}
-			const resp = await api.spare_init(data)
-			match(resp.type)
-				.with("Success", () => alert("提交成功"))
-				.exhaustive()
-		} catch (error) {
-			message.set({ type: "error", message: "" + error })
+		const data: SpareInitRequest = {
+			weeks: (() => {
+				const weeks: string[] = []
+				for (let i = begin_week(); i <= end_week(); i = addWeeks(i, 1)) {
+					weeks.push(format(i, "RRRR-'W'II"))
+				}
+				return weeks
+			})(),
+			rooms: rooms(),
+			spares: spares(),
 		}
+		const resp = await api.spare_init(data)
+		return match(resp.type)
+			.with("Success", () => "提交成功")
+			.exhaustive()
 	}
+	const status = new SubmitStatus(submit)
 
 	const delete_row = (index: number) => {
 		set_spares_input(spares => spares.filter((_, i) => i !== index))
@@ -404,10 +390,8 @@ const SpareManage: Component = () => {
 				spares={spares()}
 				rooms={rooms()}
 				base_week={begin_week()} />
-			<div class="ui segment" style={{ "text-align": "center" }}>
-				<button class="ui button" onClick={submit}> 提交 </button>
-				{Message(message.get())}
-			</div>
+			<div class="ui horizontal divider" />
+			<SubmitField {...status} />
 		</>
 	)
 }
