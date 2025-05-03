@@ -2,7 +2,7 @@ import { Component, createMemo, createResource, createSignal } from "solid-js"
 import { MenuViewer } from "../lib/MenuViewer"
 import { LinkButton, ResourceLoader, SubmitField, SubmitStatus } from "../lib/common"
 import { ColumnDef, createSolidTable, flexRender, getCoreRowModel, getPaginationRowModel, Table } from "@tanstack/solid-table"
-import { api, Role, Roles, Room, Spare, SpareInitRequest, UserFulls, UserSetResponse } from "../api"
+import { api, Role, Room, Spare, SpareInitRequest, UserFulls, UserSetResponse } from "../api"
 import { WeekSelect } from "../lib/WeekSelect"
 import { addDays, addWeeks, format, formatISODuration, intervalToDuration, parse } from "date-fns"
 import { match } from "ts-pattern"
@@ -29,29 +29,6 @@ const TanstackTableContent = <T,>(props: { table: Table<T> }) => <>
 		))}
 	</tbody>
 </>
-
-const user_list_demo: UserFulls = [
-	{
-		id: 1,
-		username: "zhangyang",
-		roles: [{ type: "user" }],
-	},
-	{
-		id: 2,
-		username: "admin1",
-		roles: [{ type: "admin" }, { type: "user" }],
-	},
-	{
-		id: 1001,
-		username: "terminal1",
-		roles: [{ type: "terminal" }],
-	},
-	...Array.from({ length: 100 }, (_, i) => ({
-		id: i + 3,
-		username: `user${i + 3}`,
-		roles: [{ type: "user" }] as Roles,
-	})),
-]
 
 const UserListManage = (users: UserFulls) => {
 	const role_list: Role["type"][] = ["admin", "user", "terminal"] // [Reminder] update this when new roles are added
@@ -191,8 +168,7 @@ const UserListManage = (users: UserFulls) => {
 }
 
 const UserManage: Component = () => {
-	const [users] = createResource(async () => user_list_demo)
-	// const [users] = createResource(async () => (await api.users_list({})).users)
+	const [users] = createResource(async () => (await api.users_list({})).users)
 	return (
 		<ResourceLoader resource={users} render={UserListManage} />
 	)
