@@ -1,25 +1,206 @@
-import { Component, createMemo, createSignal } from "solid-js"
+import { Component, createMemo, createResource, createSignal } from "solid-js"
 import { MenuViewer } from "../lib/MenuViewer"
-import { Message, FormInput, MessageProps } from "../lib/common"
-import { ColumnDef, createSolidTable, flexRender, getCoreRowModel } from "@tanstack/solid-table"
-import { api, Room, Spare, SpareInitRequest } from "../api"
+import { LinkButton, Message, MessageProps, ResourceLoader } from "../lib/common"
+import { ColumnDef, createSolidTable, flexRender, getCoreRowModel, getPaginationRowModel } from "@tanstack/solid-table"
+import { api, Role, Roles, Room, Spare, SpareInitRequest, UserFulls, UserSetResponse } from "../api"
 import { WeekSelect } from "../lib/WeekSelect"
 import { addDays, addWeeks, format, formatISODuration, intervalToDuration, parse } from "date-fns"
 import { match } from "ts-pattern"
 import { Signal } from "../util"
 import { Calendar } from "../component/Calendar"
 
-const UserManage: Component = () => {
-	// TODO[Early]: Finish this component
+const user_list_demo: UserFulls = [
+	{
+		id: 1,
+		username: "zhangyang",
+		roles: [{ type: "user" }],
+	},
+	{
+		id: 2,
+		username: "admin1",
+		roles: [{ type: "admin" }, { type: "user" }],
+	},
+	{
+		id: 1001,
+		username: "terminal1",
+		roles: [{ type: "terminal" }],
+	},
+	...Array.from({ length: 100 }, (_, i) => ({
+		id: i + 3,
+		username: `user${i + 3}`,
+		roles: [{ type: "user" }] as Roles,
+	})),
+]
+
+const UserListManage = (users: UserFulls) => {
+	const role_list: Role["type"][] = ["admin", "user", "terminal"] // [Reminder] update this when new roles are added
+	const loading = new Signal<boolean>(false)
+	const message = new Signal<MessageProps>({ type: null })
+
+	// part: form data
+	type UserInput = {
+		id: number;
+		username: string;
+		roles: Map<Role["type"], Signal<boolean>>;
+		roles_updated: boolean;
+		password: Signal<string | undefined>;
+	}
+	const users_input: UserInput[] = users.map(user => ({
+		id: user.id,
+		username: user.username,
+		roles: new Map<Role["type"], Signal<boolean>>(
+			role_list.map(role => [role, new Signal<boolean>(user.roles.some(r => r.type === role))])
+		),
+		roles_updated: false,
+		password: new Signal<string | undefined>(undefined),
+	}))
+
+	// part: handlers
+	const toggle_role = (user: UserInput, role: Role["type"]) => {
+		console.log(user.id, role)
+		user.roles.get(role)!.set(x => !x)
+		user.roles_updated = true
+	}
+	const submit = async () => {
+		try {
+			loading.set(true)
+			const responses: Promise<UserSetResponse>[] = []
+			users_input.forEach(user => {
+				if (user.roles_updated) {
+					responses.push(api.user_set({
+						user_id: user.id,
+						operation: {
+							type: "roles",
+							content: user.roles.entries().flatMap(([role, value]) => value.get() ? [{ type: role }] : []).toArray(),
+						},
+					}))
+				}
+				const password = user.password.get()
+				if (password !== undefined) {
+					responses.push(api.user_set({
+						user_id: user.id,
+						operation: { type: "password", content: password }
+					}))
+				}
+			})
+			await Promise.all(responses)
+			loading.set(false)
+			message.set({ type: "success", message: "修改成功" })
+		} catch (error) {
+			message.set({ type: "error", message: "" + error })
+		}
+	}
+
+	// part: table
+	// create a table of users, using tanstack table
+	// with columns: id, username, (set) roles, (set) password
+	const columns: ColumnDef<UserInput>[] = [
+		{
+			header: "编号",
+			accessorKey: "id",
+			cell: ({ getValue }) => (
+				<div> {getValue() as string} </div>
+			),
+		},
+		{
+			header: "用户名",
+			accessorKey: "username",
+			cell: ({ getValue }) => (
+				<div> {getValue() as string} </div>
+			),
+		},
+		{
+			header: "角色",
+			accessorKey: "roles",
+			cell: ({ row }) => (
+				row.original.roles.entries().map(([role, value]) => (
+					<button class="ui right icon button tiny"
+						onClick={() => toggle_role(row.original, role)}
+						classList={{ green: value.get() }}>
+						{role}
+					</button>
+				)).toArray()
+			),
+		},
+		{
+			header: "密码",
+			accessorKey: "password",
+			cell: ({ row }) => (
+				<div class="ui basic input">
+					<input type="password"
+						value={row.original.password.get() ?? ""}
+						onChange={e => row.original.password.set(e.currentTarget.value)} />
+				</div>
+			),
+		}
+	]
+
+	const table = createSolidTable({
+		get data() {
+			return users_input
+		},
+		columns,
+		getCoreRowModel: getCoreRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+	})
+
+	// part: HTML
 	return (
-		<div class="ui form">
-			<h4 class="ui dividing header"> 修改密码 </h4>
-			<div class="inline fields">
-				<FormInput label="用户名" name="username" />
-				<FormInput label="新密码" name="password" type="password" />
-				<button class="ui button" tabindex="0"> 修改 </button>
+		<>
+			<h4> 用户管理 </h4>
+			<div>
+				<table class="ui celled table segment">
+					<thead>
+						{table.getHeaderGroups().map(headerGroup => (
+							<tr>
+								{headerGroup.headers.map(header => (
+									<th>{flexRender(header.column.columnDef.header, header.getContext())}</th>
+								))}
+							</tr>
+						))}
+					</thead>
+					<tbody>
+						{table.getRowModel().rows.map(row => (
+							<tr>
+								{row.getVisibleCells().map(cell => (
+									<td>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+								))}
+							</tr>
+						))}
+					</tbody>
+					<tfoot>
+						<tr>
+							<td colspan={columns.length}>
+								<div class="ui right floated pagination menu">
+									<LinkButton class="icon item" label={<i class="left chevron icon"></i>}
+										classList={{ disabled: !table.getCanPreviousPage() }}
+										onClick={() => table.previousPage()} />
+									<a class="item"> 
+										第 {table.getState().pagination.pageIndex + 1} 页，
+										共 {table.getPageCount()} 页
+									</a>
+									<LinkButton class="icon item" label={<i class="right chevron icon"></i>}
+										classList={{ disabled: !table.getCanNextPage() }}
+										onClick={() => table.nextPage()} />
+								</div>
+								<div class="ui center aligned">
+									<button class="ui button" onClick={submit}> 提交 </button>
+									{Message(message.get())}
+								</div>
+							</td>
+						</tr>
+					</tfoot>
+				</table>
 			</div>
-		</div>
+		</>
+	)
+}
+
+const UserManage: Component = () => {
+	const [users] = createResource(async () => user_list_demo)
+	// const [users] = createResource(async () => (await api.users_list({})).users)
+	return (
+		<ResourceLoader resource={users} render={UserListManage} />
 	)
 }
 
@@ -64,8 +245,6 @@ const SpareManage: Component = () => {
 		[...new Set(spares_input().map(spare => spare.room.get()))]
 	))
 
-
-
 	// part: handlers
 
 	const submit = async () => {
@@ -89,7 +268,7 @@ const SpareManage: Component = () => {
 			message.set({ type: "error", message: "" + error })
 		}
 	}
-	
+
 	const delete_row = (index: number) => {
 		set_spares_input(spares => spares.filter((_, i) => i !== index))
 	}

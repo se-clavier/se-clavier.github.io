@@ -1,4 +1,5 @@
-import { JSX, splitProps } from "solid-js"
+import { JSX, Resource, splitProps } from "solid-js"
+import { match } from "ts-pattern"
 
 export const FormInput = (props: {
 	label: string,
@@ -22,7 +23,7 @@ export const Loader = () => <div class="ui segment">
 </div>
 
 export const LinkButton = (props: {
-	label: string,
+	label: JSX.Element,
 	onClick: () => void,
 } & JSX.HTMLAttributes<HTMLAnchorElement>) => {
 	const [local, rest] = splitProps(props, ["label", "onClick"])
@@ -59,3 +60,16 @@ export const Message = (props: MessageProps & JSX.HTMLAttributes<HTMLDivElement>
 		)
 	}
 }
+
+export const ResourceLoader = <T,>(props: {
+	resource: Resource<T>,
+	render: (data: T) => JSX.Element,
+}) => (<>
+		{
+			match(props.resource.error)
+				.with(undefined, () => match(props.resource())
+					.with(undefined, () => <Loader />)
+					.otherwise(props.render))
+				.otherwise(error => <Message type="error" message={"" + error} />)
+		}
+	</>)

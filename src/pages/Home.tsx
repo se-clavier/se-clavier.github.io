@@ -2,7 +2,7 @@ import { Component, createResource, createSignal, JSXElement, Show } from "solid
 import { db } from "../db"
 import { match } from "ts-pattern"
 import { api, Spare, Spares, User } from "../api"
-import { Message, Loader } from "../lib/common"
+import { ResourceLoader } from "../lib/common"
 import { Calendar } from "../component/Calendar"
 import { format, formatDate } from "date-fns"
 import { zhCN } from "date-fns/locale"
@@ -86,17 +86,11 @@ const Main = (props: { user: User }) => {
 		<div class="ui" style={{ "text-align": "center" }}>
 			<WeekSelect get={week} set={set_week} />
 		</div>
-		{
-			match(data.error)
-				.with(undefined, () => match(data())
-					.with(undefined, () => <Loader />)
-					.otherwise(({ spares, rooms }) => <>
-						<Calendar spares={spares} rooms={rooms} base_week={week()} focus_user={props.user} />
-						<MySpares spares={spares.filter(spare => spare.assignee?.id === props.user.id)} refresh={refetch} />
-						<AvailableSpares spares={spares.filter(spare => spare.assignee === null)} refresh={refetch} />
-					</>))
-				.otherwise(error => <Message type="error" message={"" + error} />)
-		}
+		<ResourceLoader resource={data} render={({ spares, rooms }) => <>
+			<Calendar spares={spares} rooms={rooms} base_week={week()} focus_user={props.user} />
+			<MySpares spares={spares.filter(spare => spare.assignee?.id === props.user.id)} refresh={refetch} />
+			<AvailableSpares spares={spares.filter(spare => spare.assignee === null)} refresh={refetch} />
+		</>} />
 	</>
 }
 
