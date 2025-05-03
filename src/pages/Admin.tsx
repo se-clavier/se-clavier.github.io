@@ -1,13 +1,34 @@
 import { Component, createMemo, createResource, createSignal } from "solid-js"
 import { MenuViewer } from "../lib/MenuViewer"
 import { LinkButton, Message, MessageProps, ResourceLoader } from "../lib/common"
-import { ColumnDef, createSolidTable, flexRender, getCoreRowModel, getPaginationRowModel } from "@tanstack/solid-table"
+import { ColumnDef, createSolidTable, flexRender, getCoreRowModel, getPaginationRowModel, Table } from "@tanstack/solid-table"
 import { api, Role, Roles, Room, Spare, SpareInitRequest, UserFulls, UserSetResponse } from "../api"
 import { WeekSelect } from "../lib/WeekSelect"
 import { addDays, addWeeks, format, formatISODuration, intervalToDuration, parse } from "date-fns"
 import { match } from "ts-pattern"
 import { Signal } from "../util"
 import { Calendar } from "../component/Calendar"
+
+const TanstackTableContent = <T,>(props: { table: Table<T> }) => <>
+	<thead>
+		{props.table.getHeaderGroups().map(headerGroup => (
+			<tr>
+				{headerGroup.headers.map(header => (
+					<th>{flexRender(header.column.columnDef.header, header.getContext())}</th>
+				))}
+			</tr>
+		))}
+	</thead>
+	<tbody>
+		{props.table.getRowModel().rows.map(row => (
+			<tr>
+				{row.getVisibleCells().map(cell => (
+					<td>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+				))}
+			</tr>
+		))}
+	</tbody>
+</>
 
 const user_list_demo: UserFulls = [
 	{
@@ -150,24 +171,7 @@ const UserListManage = (users: UserFulls) => {
 			<h4> 用户管理 </h4>
 			<div>
 				<table class="ui celled table segment">
-					<thead>
-						{table.getHeaderGroups().map(headerGroup => (
-							<tr>
-								{headerGroup.headers.map(header => (
-									<th>{flexRender(header.column.columnDef.header, header.getContext())}</th>
-								))}
-							</tr>
-						))}
-					</thead>
-					<tbody>
-						{table.getRowModel().rows.map(row => (
-							<tr>
-								{row.getVisibleCells().map(cell => (
-									<td>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
-								))}
-							</tr>
-						))}
-					</tbody>
+					<TanstackTableContent table={table} />
 					<tfoot>
 						<tr>
 							<td colspan={columns.length}>
@@ -175,7 +179,7 @@ const UserListManage = (users: UserFulls) => {
 									<LinkButton class="icon item" label={<i class="left chevron icon"></i>}
 										classList={{ disabled: !table.getCanPreviousPage() }}
 										onClick={() => table.previousPage()} />
-									<a class="item"> 
+									<a class="item">
 										第 {table.getState().pagination.pageIndex + 1} 页，
 										共 {table.getPageCount()} 页
 									</a>
@@ -363,6 +367,7 @@ const SpareManage: Component = () => {
 	return (
 		<>
 			<h4> 琴房信息初始化 </h4>
+			{/* Week selector */}
 			<div class="ui form">
 				<div class="inline fields">
 					<div class="ui field">
@@ -379,26 +384,10 @@ const SpareManage: Component = () => {
 					</div>
 				</div>
 			</div>
+			{/* Input table */}
 			<div>
 				<table class="ui celled table segment">
-					<thead>
-						{table.getHeaderGroups().map(headerGroup => (
-							<tr>
-								{headerGroup.headers.map(header => (
-									<th>{flexRender(header.column.columnDef.header, header.getContext())}</th>
-								))}
-							</tr>
-						))}
-					</thead>
-					<tbody>
-						{table.getRowModel().rows.map(row => (
-							<tr>
-								{row.getVisibleCells().map(cell => (
-									<td>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
-								))}
-							</tr>
-						))}
-					</tbody>
+					<TanstackTableContent table={table} />
 					<tfoot>
 						<tr>
 							<td colspan={columns.length} style={{ "text-align": "center" }}>
@@ -410,6 +399,7 @@ const SpareManage: Component = () => {
 					</tfoot>
 				</table>
 			</div>
+			{/* Preview and submit */}
 			<Calendar
 				spares={spares()}
 				rooms={rooms()}
