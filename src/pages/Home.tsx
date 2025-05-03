@@ -51,6 +51,7 @@ const MySpares = (props: { spares: Spares, refresh: () => void, }) => (
 						await api.spare_return({ id: spare.id })
 						props.refresh()
 					}}> 取消预约 </button>
+					// TODO[Early]: add button to checkin/checkout
 				} />)}
 			</div>
 		</Show>

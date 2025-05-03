@@ -16,6 +16,16 @@ const app_goto = (app: Component) => {
 	}
 }
 
+export const CheckinButton = () => {
+	// TODO[Early]: Finish CheckinComponent
+	const checkin = async () => {
+	}
+
+	return (
+		<LinkButton onClick={checkin} label={<i class="fitted expand icon" />} />
+	)
+}
+
 export const SideBar: Component = () => {
 	const sidebar_logout = () => {
 		db.auth.unset()
@@ -24,14 +34,14 @@ export const SideBar: Component = () => {
 
 	return (
 		<>
-			<a class="icon item" role="button" tabindex="0" 
+			<a class="icon item" role="button" tabindex="0"
 				onClick={toggleSidebar}
 				onKeyDown={
 					event => match(event.key)
 						.with("Enter", () => $("#sidebar").sidebar("show"))
 						.with("Escape", () => $("#sidebar").sidebar("hide"))
 				}>
-				<i class="bars icon" />
+				<i class="fitted bars icon" />
 			</a>
 			<div class="ui right vertical sidebar menu" id="sidebar">
 				<LinkButton label="主页" onClick={app_goto(Home)} />
@@ -75,6 +85,7 @@ export const TopBar: Component = () => {
 					.otherwise(user => (
 						<div class="right menu">
 							<div class="item">{user.username}</div>
+							<CheckinButton />
 							{/* This SideBar component will be moved by FomanticJS, so it cannot handle signal */}
 							{/* TODO: use other component that will not be moved */}
 							<SideBar />

@@ -22,7 +22,7 @@ export const Loader = () => <div class="ui segment">
 </div>
 
 export const LinkButton = (props: {
-	label: string,
+	label: JSX.Element,
 	onClick: () => void,
 } & JSX.HTMLAttributes<HTMLAnchorElement>) => {
 	const [local, rest] = splitProps(props, ["label", "onClick"])
