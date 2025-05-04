@@ -1,17 +1,14 @@
-import { Show, type Component } from "solid-js"
+import { type Component } from "solid-js"
 import { match } from "ts-pattern"
 import { register } from "./Register"
 import { login } from "./Login"
 import { db } from "../db"
-import { mainApp } from "../App"
-import { Admin } from "../pages/Admin"
-import { Home } from "../pages/Home"
-import { Settings } from "../pages/Settings"
+import { router } from "../App"
 import { LinkButton } from "../lib/common"
 
-const app_goto = (app: Component) => {
+const app_goto = (app: string) => {
 	return () => {
-		mainApp.set(() => app)
+		router.goto(app)
 		$("#sidebar").sidebar("hide")
 	}
 }
@@ -29,7 +26,7 @@ export const CheckinButton = () => {
 export const SideBar: Component = () => {
 	const sidebar_logout = () => {
 		db.auth.unset()
-		app_goto(Home)()
+		app_goto("home")()
 	}
 
 	return (
@@ -44,11 +41,9 @@ export const SideBar: Component = () => {
 				<i class="fitted bars icon" />
 			</a>
 			<div class="ui right vertical sidebar menu" id="sidebar">
-				<LinkButton label="主页" onClick={app_goto(Home)} />
-				<LinkButton label="设置" onClick={app_goto(Settings)} />
-				<Show when={db.auth.get()?.roles.some(t => t.type === "admin")}>
-					<LinkButton label="管理" onClick={app_goto(Admin)} />
-				</Show>
+				{router.page.get().list.map(page => (
+					<LinkButton label={page.name} onClick={app_goto(page.id)} />
+				))}
 				<LinkButton label="登出" onClick={sidebar_logout} />
 			</div>
 		</>
