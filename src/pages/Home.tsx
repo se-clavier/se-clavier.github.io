@@ -1,5 +1,4 @@
-import { Component, createResource, createSignal, JSXElement, Show } from "solid-js"
-import { db } from "../db"
+import { createResource, createSignal, JSXElement, Show } from "solid-js"
 import { match } from "ts-pattern"
 import { api, Spare, Spares, User } from "../api"
 import { Message, Loader } from "../lib/common"
@@ -73,7 +72,7 @@ const AvailableSpares = (props: { spares: Spares, refresh: () => void }) => (
 	</div>
 )
 
-const Main = (props: { user: User }) => {
+export const Home = (props: { user: User }) => {
 	const [week, set_week] = createSignal(new Date())
 	const [data, { refetch }] = createResource(week, async () => {
 		return await api.spare_list({
@@ -99,11 +98,3 @@ const Main = (props: { user: User }) => {
 		}
 	</>
 }
-
-export const Home: Component = () => <>
-	{
-		match(db.user.get())
-			.with(null, () => "请先登录")
-			.otherwise(user => <Main user={user} />)
-	}
-</>

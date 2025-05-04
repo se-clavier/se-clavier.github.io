@@ -38,18 +38,23 @@ export class PersistentSignal<T> {
 	}
 }
 
+type DBUser = User & { auth: Auth }
+
 class DB {
 	auth: PersistentSignal<Auth>
-	user: Signal<User | null>
+	user: Signal<DBUser | null>
 
 	constructor() {
 		this.auth = new PersistentSignal("auth")
-		this.user = new Signal<User | null>(null)
+		this.user = new Signal<DBUser | null>(null)
 		createEffect(async () => {
 			this.user.set(
 				await match(this.auth.get())
 					.with(null, () => null)
-					.otherwise(auth => api.get_user(auth.id))
+					.otherwise(async auth => ({
+						auth,
+						...await api.get_user(auth.id)
+					} as DBUser))
 			)
 		})
 	}
