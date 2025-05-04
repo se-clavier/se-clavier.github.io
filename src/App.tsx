@@ -54,7 +54,6 @@ class Router {
 		// filter pages by role
 		createEffect(() => {
 			const list = (db.user.get()?.auth.roles ?? [{ type: "nologin" }]).flatMap(role => pages[role.type])
-			console.log("list", list)
 			this.page.set({
 				list,
 				current: list[0]?.component ?? (() => "no such page"),
