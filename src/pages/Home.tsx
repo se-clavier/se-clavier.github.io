@@ -2,7 +2,7 @@ import { createResource, createSignal, JSXElement, Show } from "solid-js"
 import { match } from "ts-pattern"
 import { api, Spare, Spares, User } from "../api"
 import { Message, Loader } from "../lib/common"
-import { Calendar } from "../component/Calendar"
+import { Calendar, SpareDefaultTd } from "../component/Calendar"
 import { format, formatDate } from "date-fns"
 import { zhCN } from "date-fns/locale"
 import { WeekSelect } from "../lib/WeekSelect"
@@ -90,7 +90,7 @@ export const Home = (props: { user: User }) => {
 				.with(undefined, () => match(data())
 					.with(undefined, () => <Loader />)
 					.otherwise(({ spares, rooms }) => <>
-						<Calendar spares={spares} rooms={rooms} base_week={week()} focus_user={props.user} />
+						<Calendar spares={spares} rooms={rooms} base_week={week()} cell={SpareDefaultTd(props.user)} />
 						<MySpares spares={spares.filter(spare => spare.assignee?.id === props.user.id)} refresh={refetch} />
 						<AvailableSpares spares={spares.filter(spare => spare.assignee === null)} refresh={refetch} />
 					</>))

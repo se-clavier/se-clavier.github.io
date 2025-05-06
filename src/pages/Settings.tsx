@@ -3,6 +3,7 @@ import { FormInput, Message, MessageProps } from "../lib/common"
 import { Signal } from "../util"
 import { api } from "../api"
 import { match } from "ts-pattern"
+import { MenuViewer } from "../lib/MenuViewer"
 
 const ResetPassword: Component = () => {
 	const loading = new Signal<boolean>(false)
@@ -38,8 +39,15 @@ const ResetPassword: Component = () => {
 	)
 }
 
-export const Settings: Component = () => {
+const SpareQuestionaire = () => {
 	return <>
-		<ResetPassword />
+		<h2 class="ui dividing header"> 琴房时间收集问卷 </h2>
 	</>
+}
+
+export const Settings: Component = () => {
+	return MenuViewer([
+		{ name: "修改密码", component: ResetPassword },
+		{ name: "时间设置", component: SpareQuestionaire },
+	])
 }

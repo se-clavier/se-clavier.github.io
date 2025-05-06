@@ -4,6 +4,7 @@ import { MenuViewer } from "../lib/MenuViewer"
 import { match } from "ts-pattern"
 import { addDays, format, startOfWeek } from "date-fns"
 import { durationToMinute, parseISODuration } from "../util"
+import { Dynamic } from "solid-js/web"
 
 const tdStyle = {
 	height: "20px",
@@ -45,7 +46,7 @@ type SpareDisplay = {
 }
 
 type SpareTdStyle = "Mine" | "Taken" | "Available"
-const SpareTd = (props: { spare: SpareDisplay, style: SpareTdStyle }) => {
+const SpareInfoTd = (props: { spare: SpareDisplay, style: SpareTdStyle }) => {
 	let color, tdText
 	if (props.style === "Available") {
 		color = "blue"
@@ -70,8 +71,17 @@ const SpareTd = (props: { spare: SpareDisplay, style: SpareTdStyle }) => {
 type CalendarTableProps = {
 	spares: Spares,
 	base_week: Date,
-	user?: User,
+	cell?: (props: { spare: SpareDisplay, current_user?: User }) => JSX.Element
 }
+
+export const SpareDefaultTd = (focus_user?: User) =>
+	(props: { spare: SpareDisplay }) =>
+		<SpareInfoTd spare={props.spare} style={
+			match(props.spare.assignee)
+				.with(null, () => "Available" as SpareTdStyle)
+				.with({ id: focus_user?.id }, () => "Mine" as SpareTdStyle)
+				.otherwise(() => "Taken" as SpareTdStyle)
+		} />
 
 const CalendarTable = (props: CalendarTableProps) => {
 	const monday = startOfWeek(props.base_week, { weekStartsOn: 1 })
@@ -127,12 +137,7 @@ const CalendarTable = (props: CalendarTableProps) => {
 											{
 												match(findMatched(i(), block))
 													.with(undefined, () => <td style={tdStyle}></td>)
-													.otherwise(spare => <SpareTd spare={spare} style={
-														match(spare.assignee)
-															.with(null, () => "Available" as SpareTdStyle)
-															.with({ id: props.user?.id }, () => "Mine" as SpareTdStyle)
-															.otherwise(() => "Taken" as SpareTdStyle)
-													} />)
+													.otherwise(spare => <Dynamic component={props.cell} spare={spare} />)
 											}
 										</Show>
 									)}
@@ -150,7 +155,7 @@ export type CalendarProps = {
 	spares: Spares
 	rooms: Rooms
 	base_week: Date
-	focus_user?: User
+	cell: (props: { spare: SpareDisplay }) => JSX.Element
 }
 
 export const Calendar = (props: CalendarProps) => (
@@ -160,7 +165,7 @@ export const Calendar = (props: CalendarProps) => (
 			component: () => <CalendarTable
 				spares={props.spares.filter(spare => spare.room == room)}
 				base_week={props.base_week}
-				user={props.focus_user} />,
+				cell={props.cell} />
 		}))} />
 	</Show>
 )

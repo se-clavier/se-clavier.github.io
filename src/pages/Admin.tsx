@@ -7,7 +7,7 @@ import { WeekSelect } from "../lib/WeekSelect"
 import { addDays, addWeeks, format, formatISODuration, intervalToDuration, parse } from "date-fns"
 import { match } from "ts-pattern"
 import { Signal } from "../util"
-import { Calendar } from "../component/Calendar"
+import { Calendar, SpareDefaultTd } from "../component/Calendar"
 
 const UserManage: Component = () => {
 	// TODO[Early]: Finish this component
@@ -89,7 +89,7 @@ const SpareManage: Component = () => {
 			message.set({ type: "error", message: "" + error })
 		}
 	}
-	
+
 	const delete_row = (index: number) => {
 		set_spares_input(spares => spares.filter((_, i) => i !== index))
 	}
@@ -234,7 +234,8 @@ const SpareManage: Component = () => {
 			<Calendar
 				spares={spares()}
 				rooms={rooms()}
-				base_week={begin_week()} />
+				base_week={begin_week()}
+				cell={SpareDefaultTd()} />
 			<div class="ui segment" style={{ "text-align": "center" }}>
 				<button class="ui button" onClick={submit}> 提交 </button>
 				{Message(message.get())}
