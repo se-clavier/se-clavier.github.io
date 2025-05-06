@@ -389,7 +389,6 @@ const SpareManage: Component = () => {
 			<Calendar
 				spares={spares()}
 				rooms={rooms()}
-				base_week={begin_week()}
 				cell={SpareDefaultTd()} />
 			<div class="ui horizontal divider" />
 			<SubmitField {...status} />

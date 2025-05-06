@@ -42,7 +42,8 @@ type SpareDisplay = {
 	assignee: {
 		id: number
 		username: string
-	} | null
+	} | null,
+	row_span: number
 }
 
 type SpareTdStyle = "Mine" | "Taken" | "Available"
@@ -59,10 +60,8 @@ const SpareInfoTd = (props: { spare: SpareDisplay, style: SpareTdStyle }) => {
 		tdText = props.spare.assignee?.username
 	}
 
-	const rowSpan = Math.round((props.spare.end_time - props.spare.begin_time) / 30)
-
 	return (
-		<td class={color} style={tdStyle} rowspan={rowSpan}>
+		<td class={color} style={tdStyle} rowspan={props.spare.row_span}>
 			{tdText}
 		</td>
 	)
@@ -70,7 +69,7 @@ const SpareInfoTd = (props: { spare: SpareDisplay, style: SpareTdStyle }) => {
 
 type CalendarTableProps = {
 	spares: Spares,
-	base_week: Date,
+	base_week?: Date,
 	cell?: (props: { spare: SpareDisplay, current_user?: User }) => JSX.Element
 }
 
@@ -84,14 +83,19 @@ export const SpareDefaultTd = (focus_user?: User) =>
 		} />
 
 const CalendarTable = (props: CalendarTableProps) => {
-	const monday = startOfWeek(props.base_week, { weekStartsOn: 1 })
+	const monday = startOfWeek(props.base_week ?? new Date(), { weekStartsOn: 1 })
 	const weekDates = Array.from({ length: 7 }, (_, i) => addDays(monday, i))
 
-	const spares = props.spares.map(spare => ({
-		...spare,
-		begin_time: durationToMinute(parseISODuration(spare.begin_time)),
-		end_time: durationToMinute(parseISODuration(spare.end_time)),
-	}))
+	const spares: SpareDisplay[] = props.spares.map(spare => {
+		const begin_time = durationToMinute(parseISODuration(spare.begin_time))
+		const end_time = durationToMinute(parseISODuration(spare.end_time))
+		return ({
+			...spare,
+			begin_time,
+			end_time,
+			row_span: Math.round((end_time - begin_time) / 30)
+		})
+	})
 
 	const findMatched = (day: number, begin_time: number) => {
 		return spares.find(spare =>
@@ -116,7 +120,9 @@ const CalendarTable = (props: CalendarTableProps) => {
 								<th style={tdStyle}>
 									{weekday_labels[i()]}
 									<br />
-									{format(date, "M-d")}
+									<Show when={props.base_week !== undefined}>
+										{format(date, "M-d")}
+									</Show>
 								</th>
 							)}
 						</For>
@@ -154,7 +160,7 @@ const CalendarTable = (props: CalendarTableProps) => {
 export type CalendarProps = {
 	spares: Spares
 	rooms: Rooms
-	base_week: Date
+	base_week?: Date
 	cell: (props: { spare: SpareDisplay }) => JSX.Element
 }
 
