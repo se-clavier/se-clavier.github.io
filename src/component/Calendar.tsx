@@ -4,6 +4,7 @@ import { MenuViewer } from "../lib/MenuViewer"
 import { match } from "ts-pattern"
 import { addDays, format, startOfWeek } from "date-fns"
 import { durationToMinute, parseISODuration } from "../util"
+import { Dynamic } from "solid-js/web"
 
 const tdStyle = {
 	height: "20px",
@@ -41,11 +42,12 @@ type SpareDisplay = {
 	assignee: {
 		id: number
 		username: string
-	} | null
+	} | null,
+	row_span: number
 }
 
 type SpareTdStyle = "Mine" | "Taken" | "Available"
-const SpareTd = (props: { spare: SpareDisplay, style: SpareTdStyle }) => {
+const SpareInfoTd = (props: { spare: SpareDisplay, style: SpareTdStyle }) => {
 	let color, tdText
 	if (props.style === "Available") {
 		color = "blue"
@@ -58,10 +60,8 @@ const SpareTd = (props: { spare: SpareDisplay, style: SpareTdStyle }) => {
 		tdText = props.spare.assignee?.username
 	}
 
-	const rowSpan = Math.round((props.spare.end_time - props.spare.begin_time) / 30)
-
 	return (
-		<td class={color} style={tdStyle} rowspan={rowSpan}>
+		<td class={color} style={tdStyle} rowspan={props.spare.row_span}>
 			{tdText}
 		</td>
 	)
@@ -69,19 +69,33 @@ const SpareTd = (props: { spare: SpareDisplay, style: SpareTdStyle }) => {
 
 type CalendarTableProps = {
 	spares: Spares,
-	base_week: Date,
-	user?: User,
+	base_week?: Date,
+	cell?: (props: { spare: SpareDisplay, current_user?: User }) => JSX.Element
 }
 
+export const SpareDefaultTd = (focus_user?: User) =>
+	(props: { spare: SpareDisplay }) =>
+		<SpareInfoTd spare={props.spare} style={
+			match(props.spare.assignee)
+				.with(null, () => "Available" as SpareTdStyle)
+				.with({ id: focus_user?.id }, () => "Mine" as SpareTdStyle)
+				.otherwise(() => "Taken" as SpareTdStyle)
+		} />
+
 const CalendarTable = (props: CalendarTableProps) => {
-	const monday = startOfWeek(props.base_week, { weekStartsOn: 1 })
+	const monday = startOfWeek(props.base_week ?? new Date(), { weekStartsOn: 1 })
 	const weekDates = Array.from({ length: 7 }, (_, i) => addDays(monday, i))
 
-	const spares = props.spares.map(spare => ({
-		...spare,
-		begin_time: durationToMinute(parseISODuration(spare.begin_time)),
-		end_time: durationToMinute(parseISODuration(spare.end_time)),
-	}))
+	const spares: SpareDisplay[] = props.spares.map(spare => {
+		const begin_time = durationToMinute(parseISODuration(spare.begin_time))
+		const end_time = durationToMinute(parseISODuration(spare.end_time))
+		return ({
+			...spare,
+			begin_time,
+			end_time,
+			row_span: Math.round((end_time - begin_time) / 30)
+		})
+	})
 
 	const findMatched = (day: number, begin_time: number) => {
 		return spares.find(spare =>
@@ -106,7 +120,9 @@ const CalendarTable = (props: CalendarTableProps) => {
 								<th style={tdStyle}>
 									{weekday_labels[i()]}
 									<br />
-									{format(date, "M-d")}
+									<Show when={props.base_week !== undefined}>
+										{format(date, "M-d")}
+									</Show>
 								</th>
 							)}
 						</For>
@@ -127,12 +143,7 @@ const CalendarTable = (props: CalendarTableProps) => {
 											{
 												match(findMatched(i(), block))
 													.with(undefined, () => <td style={tdStyle}></td>)
-													.otherwise(spare => <SpareTd spare={spare} style={
-														match(spare.assignee)
-															.with(null, () => "Available" as SpareTdStyle)
-															.with({ id: props.user?.id }, () => "Mine" as SpareTdStyle)
-															.otherwise(() => "Taken" as SpareTdStyle)
-													} />)
+													.otherwise(spare => <Dynamic component={props.cell} spare={spare} />)
 											}
 										</Show>
 									)}
@@ -149,8 +160,8 @@ const CalendarTable = (props: CalendarTableProps) => {
 export type CalendarProps = {
 	spares: Spares
 	rooms: Rooms
-	base_week: Date
-	focus_user?: User
+	base_week?: Date
+	cell: (props: { spare: SpareDisplay }) => JSX.Element
 }
 
 export const Calendar = (props: CalendarProps) => (
@@ -160,7 +171,7 @@ export const Calendar = (props: CalendarProps) => (
 			component: () => <CalendarTable
 				spares={props.spares.filter(spare => spare.room == room)}
 				base_week={props.base_week}
-				user={props.focus_user} />,
+				cell={props.cell} />
 		}))} />
 	</Show>
 )
