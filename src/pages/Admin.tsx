@@ -7,7 +7,7 @@ import { WeekSelect } from "../lib/WeekSelect"
 import { addDays, addWeeks, format, formatISODuration, intervalToDuration, parse } from "date-fns"
 import { match } from "ts-pattern"
 import { Signal } from "../util"
-import { Calendar } from "../component/Calendar"
+import { Calendar, SpareDefaultTd } from "../component/Calendar"
 
 const TanstackTableContent = <T,>(props: { table: Table<T> }) => <>
 	<thead>
@@ -365,7 +365,7 @@ const SpareManage: Component = () => {
 			<Calendar
 				spares={spares()}
 				rooms={rooms()}
-				base_week={begin_week()} />
+				cell={SpareDefaultTd()} />
 			<div class="ui horizontal divider" />
 			<SubmitField {...status} />
 		</>

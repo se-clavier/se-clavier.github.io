@@ -1,7 +1,7 @@
 import { createResource, createSignal, JSXElement, Show } from "solid-js"
 import { api, Spare, Spares, User } from "../api"
 import { ResourceLoader } from "../lib/common"
-import { Calendar } from "../component/Calendar"
+import { Calendar, SpareDefaultTd } from "../component/Calendar"
 import { format, formatDate } from "date-fns"
 import { zhCN } from "date-fns/locale"
 import { WeekSelect } from "../lib/WeekSelect"
@@ -85,7 +85,7 @@ export const Home = (props: { user: User }) => {
 			<WeekSelect get={week} set={set_week} />
 		</div>
 		<ResourceLoader resource={data} render={({ spares, rooms }) => <>
-			<Calendar spares={spares} rooms={rooms} base_week={week()} focus_user={props.user} />
+			<Calendar spares={spares} rooms={rooms} base_week={week()} cell={SpareDefaultTd(props.user)} />
 			<MySpares spares={spares.filter(spare => spare.assignee?.id === props.user.id)} refresh={refetch} />
 			<AvailableSpares spares={spares.filter(spare => spare.assignee === null)} refresh={refetch} />
 		</>} />
