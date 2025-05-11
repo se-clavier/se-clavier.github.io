@@ -30,7 +30,7 @@ export const Terminal = () => {
 					/>
 				)} />
 				<div class="ui divider" />
-				<div class="ui button" onClick={refetch}>刷新</div>
+				<button class="ui button" onClick={refetch}>刷新</button>
 			</div>
 		</div>
 	)
