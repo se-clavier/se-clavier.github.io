@@ -5,7 +5,7 @@ import { Calendar, SpareDefaultTd } from "../component/Calendar"
 import { format, formatDate } from "date-fns"
 import { zhCN } from "date-fns/locale"
 import { WeekSelect } from "../lib/WeekSelect"
-import { spare_end_time, spare_start_time } from "../util"
+import { Signal, spare_end_time, spare_start_time } from "../util"
 import { Scanner } from "../component/Scanner"
 import { match } from "ts-pattern"
 
@@ -43,30 +43,40 @@ const SpareEmpty = () => (
 
 const CheckScanner = (props: { spare: Spare, type: "checkin" | "checkout" }) => {
 	const [messageProps, setMessageProps] = createSignal<MessageProps>({ type: null })
+	const showReload = new Signal(false)
 	const onScanned = async (text: string) => {
 		const credential = JSON.parse(text) as Auth
 		if (props.type === "checkin") {
 			match(await api.checkin({ id: props.spare.id, credential }).catch(err => setMessageProps({ type: "error", message: err })))
+				.with({ type: "InvailidCredential"}, () => setMessageProps({ type: "error", message: "二维码无效" }))
 				.with({ type: "Intime" }, () => setMessageProps({ type: "success", message: "签到成功" }))
-				.with({ type: "Early" }, () => setMessageProps({ type: "info", message: "签到时间过早" }))
+				.with({ type: "Early" }, () => { setMessageProps({ type: "info", message: "签到失败，时间过早" }); showReload.set(true) })
 				.with({ type: "Late" }, res => setMessageProps({ type: "info", message: `签到时间过晚，迟到 ${res.content} 分钟` }))
 				.with({ type: "Duplicate" }, () => setMessageProps({ type: "info", message: "请勿重复签到" }))
 		} else {
 			match(await api.checkout({ id: props.spare.id, credential }).catch(err => setMessageProps({ type: "error", message: err })))
+				.with({ type: "InvailidCredential"}, () => setMessageProps({ type: "error", message: "二维码无效" }))
 				.with({ type: "Intime" }, () => setMessageProps({ type: "success", message: "签退成功" }))
-				.with({ type: "Early" }, () => setMessageProps({ type: "info", message: "签退时间过早" }))
-				.with({ type: "Late" }, () => setMessageProps({ type: "info", message: "签退时间过晚" }))
+				.with({ type: "Early" }, () => { setMessageProps({ type: "info", message: "签退失败，时间过早" }); showReload.set(true) })
+				.with({ type: "Late" }, () => setMessageProps({ type: "info", message: "签退失败，时间过晚" }))
 				.with({ type: "NotCheckedIn" }, () => setMessageProps({ type: "info", message: "未签到，无法签退" }))
 				.with({ type: "Duplicate" }, () => setMessageProps({ type: "info", message: "请勿重复签退" }))
 		}
 	}
 	const onError = (error: string) => {
 		setMessageProps({ type: "error", message: error })
+		showReload.set(true)
 	}
+	const scanner = Scanner({ id: `scanner-${props.spare.id}-${props.type}`, onScanned, onError })
 	return <>
-		<Scanner id={`scanner-${props.spare.id}-${props.type}`} onScanned={onScanned} onError={onError}/>
+		{scanner.component}
 		{Message(messageProps())}
 		{/* why <Message {...messageProps()} /> does not work? */}
+		<Show when={showReload.get()}>
+			<button class="ui button" onClick={() => { scanner.start(); showReload.set(false) }}>
+				重试
+			</button>
+		</Show>
 	</>
 }
 
