@@ -16,7 +16,7 @@ export const Terminal = () => {
 	return (
 		<div class="ui container">
 			<div class="ui center aligned segment">
-				<h4 class="ui header">扫描以下二维码签到 / 签退</h4>
+				<h4 class="ui header">扫描以下二维码签到 / 签退，时效 5 分钟</h4>
 				<ResourceLoader resource={codeContent} render={(content) => (
 					<QRCodeSVG
 						value={content}
