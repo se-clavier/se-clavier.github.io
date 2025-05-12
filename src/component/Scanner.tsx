@@ -10,17 +10,17 @@ export interface ScannerProps {
 export const Scanner = (props: ScannerProps) => {
 	let scanner: Html5Qrcode | null = null
 	let scannerRef: HTMLDivElement | undefined
-	onMount(() => {
+	const start = async () => {
 		scanner = new Html5Qrcode(scannerRef!.id)
-		Html5Qrcode.getCameras().then(devices => {
+		await Html5Qrcode.getCameras().then(async devices => {
 			if (devices.length) {
 				const cameraId = devices[0].id
-				scanner!.start(
+				await scanner!.start(
 					cameraId, 
 					{ qrbox: 200, fps: 10 },
-					text => {
+					async text => {
 						props.onScanned(text)
-						scanner?.stop().catch(props.onError)
+						await scanner?.stop().catch()
 					},
 					() => {}
 				)
@@ -28,11 +28,15 @@ export const Scanner = (props: ScannerProps) => {
 				props.onError("未检测到摄像头")
 			}
 		}).catch(props.onError)
+	}
+	onMount(start)
+	onCleanup(async () => {
+		await scanner?.stop().catch()
 	})
-	onCleanup(() => {
-		scanner?.stop().catch(console.error)
-	})
-	return (
-		<div id={props.id} ref={scannerRef} />
-	)
+	return {
+		start,
+		component: (
+			<div id={props.id} ref={scannerRef} />
+		)
+	}
 }
