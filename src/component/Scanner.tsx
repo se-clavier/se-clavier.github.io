@@ -3,7 +3,7 @@ import { onCleanup, onMount } from "solid-js"
 
 export interface ScannerProps {
 	id: string,
-	onScanned: (text: string) => void,
+	onScanned: (text: string) => Promise<void>,
 	onError: (error: string) => void,
 }
 
@@ -19,7 +19,7 @@ export const Scanner = (props: ScannerProps) => {
 					cameraId, 
 					{ qrbox: 200, fps: 10 },
 					async text => {
-						props.onScanned(text)
+						props.onScanned(text).catch()
 						await scanner?.stop().catch()
 					},
 					() => {}
