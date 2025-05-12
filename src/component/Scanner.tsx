@@ -14,9 +14,8 @@ export const Scanner = (props: ScannerProps) => {
 		scanner = new Html5Qrcode(scannerRef!.id)
 		await Html5Qrcode.getCameras().then(async devices => {
 			if (devices.length) {
-				const cameraId = devices[0].id
 				await scanner!.start(
-					cameraId, 
+					{ facingMode: "environment" }, 
 					{ qrbox: 200, fps: 10 },
 					async text => {
 						props.onScanned(text).catch()
