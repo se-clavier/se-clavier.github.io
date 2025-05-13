@@ -47,14 +47,14 @@ const CheckScanner = (props: { spare: Spare, type: "checkin" | "checkout" }) => 
 	const onScanned = async (text: string) => {
 		const credential = JSON.parse(text) as Auth
 		if (props.type === "checkin") {
-			match(await api.checkin({ id: props.spare.id, credential }).catch(err => setMessageProps({ type: "error", message: err })))
+			match(await api.checkin({ id: props.spare.id, credential }).catch(() => setMessageProps({ type: "error", message: "二维码格式错误" })))
 				.with({ type: "InvailidCredential"}, () => setMessageProps({ type: "error", message: "二维码无效" }))
 				.with({ type: "Intime" }, () => setMessageProps({ type: "success", message: "签到成功" }))
 				.with({ type: "Early" }, () => { setMessageProps({ type: "info", message: "签到失败，时间过早" }); showReload.set(true) })
 				.with({ type: "Late" }, res => setMessageProps({ type: "info", message: `签到时间过晚，迟到 ${res.content} 分钟` }))
 				.with({ type: "Duplicate" }, () => setMessageProps({ type: "info", message: "请勿重复签到" }))
 		} else {
-			match(await api.checkout({ id: props.spare.id, credential }).catch(err => setMessageProps({ type: "error", message: err })))
+			match(await api.checkout({ id: props.spare.id, credential }).catch(() => setMessageProps({ type: "error", message: "二维码格式错误" })))
 				.with({ type: "InvailidCredential"}, () => setMessageProps({ type: "error", message: "二维码无效" }))
 				.with({ type: "Intime" }, () => setMessageProps({ type: "success", message: "签退成功" }))
 				.with({ type: "Early" }, () => { setMessageProps({ type: "info", message: "签退失败，时间过早" }); showReload.set(true) })
