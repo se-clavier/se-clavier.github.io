@@ -56,7 +56,7 @@ const SpareQuestionaire = () => {
 				}
 				const result = await api.spare_questionaire({
 					vacancy: vacancy.map(v => v.get() ? { type: "Available" } : { type: "Unavailable" })
-				})
+				}).catch(() => { throw new Error("提交失败") })
 				return match(result.type)
 					.with("Success", () => "提交成功")
 					.exhaustive()
