@@ -16,7 +16,7 @@ export const Scanner = (props: ScannerProps) => {
 			if (devices.length) {
 				await scanner!.start(
 					{ facingMode: "environment" }, 
-					{ qrbox: 200, fps: 10 },
+					{ fps: 10 },
 					async text => {
 						props.onScanned(text).catch()
 						await scanner?.stop().catch()
