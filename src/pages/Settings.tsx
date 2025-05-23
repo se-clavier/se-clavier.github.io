@@ -51,6 +51,9 @@ const SpareQuestionaire = () => {
 			const vacancy: Signal<boolean>[] = Array.from({ length: spares.spares.length })
 				.map(() => new Signal(false))
 			const status = new SubmitStatus(async () => {
+				if (!vacancy.some(v => v.get())) {
+					throw new Error("请选择至少一个时段")
+				}
 				const result = await api.spare_questionaire({
 					vacancy: vacancy.map(v => v.get() ? { type: "Available" } : { type: "Unavailable" })
 				})
