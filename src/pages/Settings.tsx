@@ -48,8 +48,7 @@ const SpareQuestionaire = () => {
 	return <>
 		<h4 class="ui dividing header"> 琴房时间收集问卷 </h4>
 		<ResourceLoader resource={spares} render={spares => {
-			const vacancy: Signal<boolean>[] = Array.from({ length: spares.spares.length })
-				.map(() => new Signal(false))
+			const vacancy: Signal<boolean>[] = spares.spares.map(spare => new Signal(spare.assignee !== null))
 			const status = new SubmitStatus(async () => {
 				const result = await api.spare_questionaire({
 					vacancy: vacancy.map(v => v.get() ? { type: "Available" } : { type: "Unavailable" })
