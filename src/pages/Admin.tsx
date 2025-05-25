@@ -378,7 +378,7 @@ const SpareListManage = () => {
 	const [data] = createResource(week.get, async (week) => ({
 		spares: (await api.spare_list({
 			type: "Week",
-			content: format(week, "RRRR-'W'ww"),
+			content: format(week, "RRRR-'W'II"),
 		})).spares,
 		users: (await api.users_list({})).users,
 	}))
