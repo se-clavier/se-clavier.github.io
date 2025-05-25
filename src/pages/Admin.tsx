@@ -1,6 +1,6 @@
 import { Component, createMemo, createResource, createSignal } from "solid-js"
 import { MenuViewer } from "../lib/MenuViewer"
-import { LinkButton, ResourceLoader, SubmitField, SubmitStatus } from "../lib/common"
+import { LinkButton, Message, ResourceLoader, SubmitField, SubmitStatus } from "../lib/common"
 import { ColumnDef, createSolidTable, flexRender, getCoreRowModel, getPaginationRowModel, Table } from "@tanstack/solid-table"
 import { api, Role, Room, Spare, SpareInitRequest, Spares, UserFulls, UserSetResponse } from "../api"
 import { WeekSelect } from "../lib/WeekSelect"
@@ -495,6 +495,17 @@ const SpareListManage = () => {
 			</div >
 		)
 	}
+	const submit = async () => {
+		const resp = await api.spare_trigger_assign({
+			weeks: [format(week.get(), "RRRR-'W'II")],
+		}).catch(() => {
+			throw new Error("提交失败")
+		})
+		return match(resp.type)
+			.with("Success", () => "提交成功，请刷新查看")
+			.exhaustive()
+	}
+	const status = new SubmitStatus(submit)
 
 	return (
 		<div class="ui form">
@@ -503,6 +514,14 @@ const SpareListManage = () => {
 					选择周：
 				</label>
 				<WeekSelect get={week.get} set={week.set} />
+			</div>
+			<div class="ui segment">
+				<div class="ui center aligned">
+					<button class="ui button"
+						classList={{ loading: status.loading.get() }}
+						onClick={status.onClick}> 初步分配 </button>
+				</div>
+				{Message(status.message.get())}
 			</div>
 			<ResourceLoader resource={data} render={render} />
 		</div>
