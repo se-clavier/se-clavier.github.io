@@ -4,10 +4,11 @@ import { LinkButton, ResourceLoader, SubmitField, SubmitStatus } from "../lib/co
 import { ColumnDef, createSolidTable, flexRender, getCoreRowModel, getPaginationRowModel, Table } from "@tanstack/solid-table"
 import { api, Role, Room, Spare, SpareInitRequest, UserFulls, UserSetResponse } from "../api"
 import { WeekSelect } from "../lib/WeekSelect"
-import { addDays, addWeeks, format, formatISODuration, intervalToDuration, parse } from "date-fns"
+import { addDays, addWeeks, format, formatDate, formatISODuration, intervalToDuration, parse } from "date-fns"
 import { match } from "ts-pattern"
-import { Signal } from "../util"
+import { Signal, spare_end_time, spare_start_time } from "../util"
 import { Calendar, SpareDefaultTd } from "../component/Calendar"
+import { zhCN } from "date-fns/locale"
 
 const TanstackTableContent = <T,>(props: { table: Table<T> }) => <>
 	<thead>
@@ -372,6 +373,96 @@ const SpareManage: Component = () => {
 	)
 }
 
+const SpareListManage = () => {
+	const week = new Signal(new Date())
+	const [data] = createResource(week.get, async (week) => ({
+		spares: (await api.spare_list({
+			type: "Week",
+			content: format(week, "RRRR-'W'ww"),
+		})).spares,
+		users: (await api.users_list({})).users,
+	}))
+
+
+
+	const render = ({ spares, users }: { spares: Spare[], users: UserFulls }) => {
+		const columns: ColumnDef<Spare>[] = [
+			{
+				header: "琴房号",
+				cell: ({ row }) => (
+					row.original.room
+				),
+			},
+			{
+				header: "日期",
+				cell: ({ row }) => (
+					formatDate(spare_start_time(row.original), "LLLdo EEEE", { locale: zhCN })
+				),
+			},
+			{
+				header: "开始时间",
+				cell: ({ row }) => (
+					format(spare_start_time(row.original), "H:mm", { locale: zhCN })
+				),
+			},
+			{
+				header: "结束时间",
+				cell: ({ row }) => (
+					format(spare_end_time(row.original), "H:mm", { locale: zhCN })
+				),
+			},
+			{
+				header: "预约人",
+				cell: ({ row }) => (
+					<select class="ui search dropdown"
+						onChange={async e => {
+							await api.spare_set_assignee({
+								id: row.original.id,
+								assignee: match(e.currentTarget.value)
+									.with("", () => null)
+									.otherwise(id => users.find(user => user.id === parseInt(id)) ?? null),
+							})
+						}}>
+						<option value=""> 不分配 </option>
+						{users.map(user => (
+							<option value={user.id} selected={row.original.assignee?.id === user.id}>
+								{user.username}
+							</option>
+						))}
+					</select>
+				),
+			},
+		]
+		const table = createSolidTable({
+			get data() {
+				return spares
+			},
+			columns,
+			getCoreRowModel: getCoreRowModel(),
+		})
+
+		return (
+			<div>
+				<table class="ui celled table segment">
+					<TanstackTableContent table={table} />
+				</table>
+			</div >
+		)
+	}
+
+	return (
+		<div class="ui form">
+			<div class="ui field">
+				<label>
+					选择周：
+				</label>
+				<WeekSelect get={week.get} set={week.set} />
+			</div>
+			<ResourceLoader resource={data} render={render} />
+		</div>
+	)
+}
+
 export const Admin: Component = () => {
 	return MenuViewer([
 		{
@@ -382,5 +473,9 @@ export const Admin: Component = () => {
 			name: "琴房管理",
 			component: SpareManage,
 		},
+		{
+			name: "琴表管理",
+			component: SpareListManage,
+		}
 	])
 }
