@@ -2,11 +2,11 @@ import { Component, createMemo, createResource, createSignal } from "solid-js"
 import { MenuViewer } from "../lib/MenuViewer"
 import { LinkButton, ResourceLoader, SubmitField, SubmitStatus } from "../lib/common"
 import { ColumnDef, createSolidTable, flexRender, getCoreRowModel, getPaginationRowModel, Table } from "@tanstack/solid-table"
-import { api, Role, Room, Spare, SpareInitRequest, UserFulls, UserSetResponse } from "../api"
+import { api, Role, Room, Spare, SpareInitRequest, Spares, UserFulls, UserSetResponse } from "../api"
 import { WeekSelect } from "../lib/WeekSelect"
 import { addDays, addWeeks, format, formatDate, formatISODuration, intervalToDuration, parse } from "date-fns"
 import { match } from "ts-pattern"
-import { Signal, spare_end_time, spare_start_time } from "../util"
+import { durationToMinute, parseISODuration, Signal, spare_start_time, spare_end_time } from "../util"
 import { Calendar, SpareDefaultTd } from "../component/Calendar"
 import { zhCN } from "date-fns/locale"
 
@@ -31,8 +31,10 @@ const TanstackTableContent = <T,>(props: { table: Table<T> }) => <>
 	</tbody>
 </>
 
-const UserListManage = (users: UserFulls) => {
+const UserListManage = (props: { users: UserFulls, spares: Spares }) => {
 	const role_list: Role["type"][] = ["admin", "user", "terminal"] // [Reminder] update this when new roles are added
+	const users = props.users
+	const spares = props.spares
 
 	// part: form data
 	type UserInput = {
@@ -41,16 +43,44 @@ const UserListManage = (users: UserFulls) => {
 		roles: Map<Role["type"], Signal<boolean>>;
 		roles_updated: boolean;
 		password: Signal<string | undefined>;
+		statistics: {
+			sum_time: number;
+			absence_count: number;
+			late_count: number;
+		}
 	}
-	const users_input: UserInput[] = users.map(user => ({
-		id: user.id,
-		username: user.username,
-		roles: new Map<Role["type"], Signal<boolean>>(
-			role_list.map(role => [role, new Signal<boolean>(user.roles.some(r => r.type === role))])
-		),
-		roles_updated: false,
-		password: new Signal<string | undefined>(undefined),
-	}))
+	const users_input: UserInput[] = users.map(user => {
+		return {
+			id: user.id,
+			username: user.username,
+			roles: new Map<Role["type"], Signal<boolean>>(
+				role_list.map(role => [role, new Signal<boolean>(user.roles.some(r => r.type === role))])
+			),
+			roles_updated: false,
+			password: new Signal<string | undefined>(undefined),
+			statistics: (spares => {
+				let sum_time = 0
+				let absence_count = 0
+				let late_count = 0 // late arrival or early leave
+				for (const spare of spares) {
+					if (spare_end_time(spare) > new Date()) continue
+					if (spare.checkout !== null) {
+						sum_time += durationToMinute(parseISODuration(spare.end_time)) - durationToMinute(parseISODuration(spare.begin_time)) - spare.checkout
+						if (spare.checkout > 0) {
+							late_count++
+						}
+					} else {
+						absence_count++
+					}
+				}
+				return {
+					sum_time,
+					absence_count,
+					late_count,
+				}
+			})(spares.filter(spare => spare.assignee?.id === user.id)),
+		}
+	})
 
 	// part: handlers
 	const toggle_role = (user: UserInput, role: Role["type"]) => {
@@ -124,7 +154,20 @@ const UserListManage = (users: UserFulls) => {
 						onChange={e => row.original.password.set(e.currentTarget.value)} />
 				</div>
 			),
-		}
+		},
+		{
+			header: "统计",
+			accessorKey: "statistics",
+			cell: ({ row }) => (
+				<>
+					总练琴时间：{row.original.statistics.sum_time} 分钟
+					<br />
+					缺勤次数：{row.original.statistics.absence_count} 次
+					<br />
+					迟到 / 早退次数：{row.original.statistics.late_count} 次
+				</>
+			),
+		},
 	]
 
 	const table = createSolidTable({
@@ -169,9 +212,12 @@ const UserListManage = (users: UserFulls) => {
 }
 
 const UserManage: Component = () => {
-	const [users] = createResource(async () => (await api.users_list({})).users)
+	const [props] = createResource(async () => ({
+		users: (await api.users_list({})).users,
+		spares: (await api.spare_list({ type: "Assigned" })).spares,
+	}))
 	return (
-		<ResourceLoader resource={users} render={UserListManage} />
+		<ResourceLoader resource={props} render={UserListManage} />
 	)
 }
 

@@ -144,7 +144,7 @@ export const Home = (props: { user: User }) => {
 	const [data, { refetch }] = createResource(week, async () => {
 		return await api.spare_list({
 			type: "Week",
-			content: format(week(), "RRRR-'W'ww"),
+			content: format(week(), "RRRR-'W'II"),
 		})
 	})
 
